@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Module 6 – Python Libraries for Machine Learning</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg-gradient: radial-gradient(circle at top left, #1d4ed8, #020617 55%, #0f172a 100%);
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      scroll-behavior: smooth;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+      background: #020617;
+      color: #e5e7eb;
+    }
+
+    body {
+      background-image: var(--bg-gradient);
+      background-attachment: fixed;
+      background-size: cover;
+    }
+
+    /* Glass / cards */
+    .glass {
+      background: radial-gradient(circle at top left, rgba(56,189,248,0.12), rgba(15,23,42,0.96));
+      border: 1px solid rgba(148,163,184,0.25);
+      box-shadow: 0 18px 60px rgba(15,23,42,0.8);
+      backdrop-filter: blur(18px);
+    }
+    .soft-card {
+      background: rgba(15,23,42,0.88);
+      border: 1px solid rgba(148,163,184,0.18);
+      box-shadow: 0 16px 40px rgba(15,23,42,0.85);
+    }
+
+    /* Animated gradient halo */
+    .halo {
+      position: absolute;
+      inset: auto;
+      width: 520px;
+      height: 520px;
+      border-radius: 999px;
+      background: conic-gradient(from 220deg, #38bdf8, #6366f1, #a855f7, #22c55e, #38bdf8);
+      opacity: 0.16;
+      filter: blur(60px);
+      animation: spin 24s linear infinite;
+      pointer-events: none;
+      z-index: -1;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Section reveal on scroll */
+    .reveal {
+      opacity: 0;
+      transform: translateY(22px) scale(0.98);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal-visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Code styling */
+    pre {
+      background: #020617;
+      border-radius: 0.75rem;
+      padding: 1rem 1.2rem;
+      overflow-x: auto;
+      border: 1px solid rgba(30,64,175,0.9);
+      box-shadow: 0 14px 40px rgba(15,23,42,0.85);
+      font-size: 0.78rem;
+      line-height: 1.6;
+    }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      color: #e5e7eb;
+      white-space: pre;
+    }
+
+    /* Simple "syntax" colors */
+    .code-kw { color: #60a5fa; }      /* keywords */
+    .code-fn { color: #22d3ee; }      /* functions */
+    .code-str { color: #34d399; }     /* strings */
+    .code-num { color: #facc15; }     /* numbers */
+    .code-comm { color: #6b7280; font-style: italic; }
+
+    /* Tabs / pills */
+    .top-tab {
+      transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+    }
+    .top-tab:hover {
+      transform: translateY(-1px);
+    }
+    .top-tab-active {
+      background: linear-gradient(to right, #38bdf8, #6366f1);
+      color: #0f172a;
+      box-shadow: 0 10px 30px rgba(37,99,235,0.7);
+    }
+
+    /* sklearn stepper */
+    .step-circle {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      border: 2px solid rgba(148,163,184,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      transition: all 0.25s ease;
+    }
+    .step-circle-active {
+      border-color: transparent;
+      background: linear-gradient(to bottom right, #38bdf8, #6366f1);
+      color: #0f172a;
+      box-shadow: 0 10px 30px rgba(59,130,246,0.8);
+      transform: translateY(-2px) scale(1.02);
+    }
+    .step-line {
+      flex: 1;
+      height: 2px;
+      background: linear-gradient(to right, rgba(148,163,184,0.3), rgba(30,64,175,0.7));
+      margin: 0 0.4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .step-line::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to right, #38bdf8, #6366f1);
+      width: 0;
+      transition: width 0.4s ease;
+    }
+    .step-line-complete::after {
+      width: 100%;
+    }
+
+    /* Broadcasting demo grid */
+    .mini-grid {
+      display: grid;
+      gap: 2px;
+      padding: 4px;
+      border-radius: 0.5rem;
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(51,65,85,0.9);
+      font-size: 0.7rem;
+    }
+    .mini-cell {
+      min-width: 26px;
+      padding: 3px 4px;
+      text-align: center;
+      border-radius: 0.35rem;
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(51,65,85,0.7);
+    }
+    .mini-cell.highlight {
+      background: rgba(56,189,248,0.15);
+      border-color: rgba(56,189,248,0.9);
+      color: #e5f9ff;
+    }
+
+    /* Mobile tweaks */
+    @media (max-width: 640px) {
+      .hero-title {
+        font-size: 1.9rem;
+        line-height: 1.2;
+      }
+      pre {
+        font-size: 0.76rem;
+      }
+    }
+  </style>
+</head>
+<body class="text-slate-100">
+  <div class="halo -top-32 -right-40"></div>
+  <div class="halo -bottom-40 -left-32 opacity-10"></div>
+
+  <header class="sticky top-0 z-30 backdrop-blur-xl bg-slate-950/70 border-b border-slate-800/70">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <div class="w-9 h-9 rounded-2xl bg-gradient-to-br from-sky-400 via-indigo-500 to-fuchsia-500 flex items-center justify-center shadow-lg shadow-sky-500/60">
+          <span class="text-xs font-semibold tracking-tight">ML</span>
+        </div>
+        <div class="leading-tight">
+          <p class="text-xs uppercase tracking-[0.2em] text-sky-300/80">Module 6</p>
+          <p class="text-sm font-semibold text-slate-50">Python ML Libraries</p>
+        </div>
+      </div>
+
+      <nav class="hidden md:flex items-center gap-1 text-xs">
+        <a href="#numpy" class="top-tab px-3 py-1.5 rounded-full bg-slate-900/70 border border-slate-700/80 text-slate-200">NumPy</a>
+        <a href="#pandas" class="top-tab px-3 py-1.5 rounded-full bg-slate-900/70 border border-slate-700/80 text-slate-200">pandas</a>
+        <a href="#matplotlib" class="top-tab px-3 py-1.5 rounded-full bg-slate-900/70 border border-slate-700/80 text-slate-200">matplotlib</a>
+        <a href="#sklearn" class="top-tab px-3 py-1.5 rounded-full bg-slate-900/70 border border-slate-700/80 text-slate-200">scikit-learn</a>
+      </nav>
+
+      <div class="flex items-center gap-2">
+        <span class="hidden sm:inline text-xs text-slate-400">Usage level · Hands-on</span>
+        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-sky-400/10 border border-sky-400/40 text-[0.65rem] uppercase tracking-[0.16em] text-sky-200">
+          🔹 ML Ready
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 pb-16 pt-6 space-y-10">
+    <!-- Hero -->
+    <section class="reveal">
+      <div class="grid md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-8 items-center mt-3">
+        <div>
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/80 border border-sky-500/30 text-[0.7rem] text-sky-100 mb-4 shadow-md shadow-sky-900/80">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.85)]"></span>
+            Usage-level guide to core ML libraries
+          </div>
+          <h1 class="hero-title text-3xl sm:text-4xl md:text-[2.6rem] font-semibold tracking-tight mb-3 text-slate-50">
+            Python Libraries for Machine Learning
+          </h1>
+          <p class="text-sm sm:text-base text-slate-300 max-w-xl mb-5">
+            Learn how to actually <span class="text-sky-300 font-medium">use</span> NumPy, pandas, matplotlib, and
+            scikit-learn together: create arrays, wrangle DataFrames, plot insights, and run a full
+            <span class="text-emerald-300 font-medium">fit → predict → evaluate</span> workflow.
+          </p>
+
+          <div class="flex flex-wrap items-center gap-3 mb-4">
+            <a href="#numpy" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-sky-400 to-indigo-500 text-slate-950 text-sm font-semibold shadow-lg shadow-sky-900/80">
+              Start with NumPy
+              <span class="-mr-1 text-xs">↓</span>
+            </a>
+            <a href="#sklearn" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900/80 border border-slate-700/70 text-xs sm:text-sm text-slate-100 hover:border-sky-400/70 transition-colors">
+              Jump to full ML workflow
+            </a>
+          </div>
+
+          <div class="flex flex-wrap gap-2 text-[0.7rem] text-slate-300/90">
+            <span class="px-2.5 py-1 rounded-full bg-slate-900/80 border border-slate-700/80">✅ Beginner friendly</span>
+            <span class="px-2.5 py-1 rounded-full bg-slate-900/80 border border-slate-700/80">💻 Copy‑pasteable code</span>
+            <span class="px-2.5 py-1 rounded-full bg-slate-900/80 border border-slate-700/80">📊 Realistic examples</span>
+          </div>
+        </div>
+
+        <div class="glass rounded-2xl p-4 sm:p-5 relative overflow-hidden">
+          <div class="absolute -top-24 -right-24 w-64 h-64 bg-sky-500/20 rounded-full blur-3xl pointer-events-none"></div>
+          <p class="text-xs font-medium text-sky-200 mb-1.5">Big picture</p>
+          <p class="text-sm text-slate-100 mb-3">
+            A typical ML project flows through four layers:
+          </p>
+
+          <ol class="space-y-2.5 text-xs">
+            <li class="flex items-start gap-2.5">
+              <div class="mt-0.5 w-6 h-6 rounded-lg bg-sky-500/20 border border-sky-500/60 flex items-center justify-center text-[0.7rem] text-sky-100">1</div>
+              <div>
+                <p class="font-semibold text-sky-100">NumPy – numeric backbone</p>
+                <p class="text-slate-300/90">Efficient arrays, vectorized math, broadcasting for fast operations.</p>
+              </div>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <div class="mt-0.5 w-6 h-6 rounded-lg bg-emerald-500/15 border border-emerald-500/60 flex items-center justify-center text-[0.7rem] text-emerald-100">2</div>
+              <div>
+                <p class="font-semibold text-emerald-100">pandas – table‑shaped data</p>
+                <p class="text-slate-300/90">Clean, filter, join, and summarize data in DataFrames.</p>
+              </div>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <div class="mt-0.5 w-6 h-6 rounded-lg bg-fuchsia-500/15 border border-fuchsia-500/60 flex items-center justify-center text-[0.7rem] text-fuchsia-100">3</div>
+              <div>
+                <p class="font-semibold text-fuchsia-100">matplotlib – see patterns</p>
+                <p class="text-slate-300/90">Line, scatter, and bar charts to understand your data.</p>
+              </div>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <div class="mt-0.5 w-6 h-6 rounded-lg bg-amber-400/20 border border-amber-400/70 flex items-center justify-center text-[0.7rem] text-amber-950">4</div>
+              <div>
+                <p class="font-semibold text-amber-100">scikit‑learn – fit models</p>
+                <p class="text-slate-300/90">Standard <span class="font-semibold">fit → predict → evaluate</span> pipeline for ML algorithms.</p>
+              </div>
+            </li>
+          </ol>
+
+          <div class="mt-4 pt-3 border-t border-slate-700/70 flex items-center justify-between gap-3">
+            <p class="text-[0.7rem] text-slate-300">
+              By the end, you’ll be able to wire these together into a full ML experiment.
+            </p>
+            <span class="px-3 py-1 rounded-full bg-slate-900/90 border border-slate-700/80 text-[0.65rem] text-slate-200">🚀 Let’s build it</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NumPy -->
+    <section id="numpy" class="reveal scroll-mt-24">
+      <div class="flex items-center justify-between mb-3 gap-2">
+        <div>
+          <p class="text-xs uppercase tracking-[0.22em] text-sky-300/80 mb-1">Step 1</p>
+          <h2 class="text-xl sm:text-2xl font-semibold tracking-tight text-slate-50 flex items-center gap-2">
+            NumPy arrays &amp; broadcasting
+          </h2>
+          <p class="text-xs text-slate-300 mt-1 max-w-xl">
+            NumPy is the numeric engine under almost every ML workflow: fast arrays, matrix math,
+            and smart “broadcasting” rules that make array shapes work together.
+          </p>
+        </div>
+        <span class="hidden sm:inline-flex items-center px-3 py-1 rounded-full bg-sky-500/15 border border-sky-400/50 text-[0.7rem] text-sky-100">
+          import numpy as np
+        </span>
+      </div>
+
+      <div class="grid lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] gap-6">
+        <!-- NumPy explanation + code -->
+        <div class="soft-card rounded-2xl p-4 sm:p-5">
+          <div class="flex flex-wrap items-center gap-2 mb-3">
+            <span class="text-xs font-semibold text-slate-200 flex items-center gap-1">
+              🔹 What you need to be able to do
+            </span>
+          </div>
+
+          <ul class="grid sm:grid-cols-2 gap-2.5 text-xs text-slate-200 mb-4">
+            <li class="flex items-start gap-2">
+              <span class="mt-0.5 w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+              <span>Create 1D / 2D arrays from Python lists and ranges.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="mt-0.5 w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+              <span>Access elements with <span class="font-mono text-[0.66rem]">arr[i, j]</span> indexing.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="mt-0.5 w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+              <span>Apply vectorized math (<span class="font-mono text-[0.66rem]">+ - * /</span>) to whole arrays.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="mt-0.5 w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+              <span>Use broadcasting to combine different‑shaped arrays.</span>
+            </li>
+          </ul>
+
+          <p class="text-xs font-semibold text-sky-200 mb-2">Example: from lists to fast arrays</p>
+          <pre><code>
+<span class="code-kw">import</span> numpy <span class="code-kw">as</span> np
+
+<span class="code-comm"># 1D array (vector)</span>
+x = np.array([1, 2, 3, 4])
+print(x.shape)          <span class="code-comm"># (4,)</span>
+
+<span class="code-comm"># 2D array (matrix)</span>
+X = np.array([
+    [1, 2, 3],
+    [4, 5, 6]
+])
+print(X.shape)          <span class="code-comm"># (2, 3)</span>
+
+<span class="code-comm"># Vectorized math (fast, elementwise)</span>
+y = x * <span class="code-num">10</span> + <span class="code-num">5</span>
+print(y)                <span class="code-comm"># [15 25 35 45]</span>
+
+<span class="code-comm"># Basic statistics</span>
+print(x.mean(), x.std())</code></pre>
+
+          <p class="text-xs font-semibold text-sky-200 mt-4 mb-2">Broadcasting in practice</p>
+          <pre><code>
+X = np.array([
+    [1, 2, 3],
+    [4, 5, 6]
+])                      <span class="code-comm"># shape (2, 3)</span>
+
+row_means = X.mean(axis=<span class="code-num">1</span>, keepdims=<span class="code-kw">True</span>)
+<span class="code-comm"># row_means has shape (2, 1)</span>
+
+X_centered = X - row_means
+<span class="code-comm"># row_means is "stretched" across columns (broadcasted)
+# result shape is still (2, 3)</span></code></pre>
+        </div>
+
+        <!-- Broadcasting interactive demo -->
+        <div class="soft-card rounded-2xl p-4 sm:p-5 flex flex-col gap-3">
+          <div class="flex items-center justify-between gap-2">
+            <p class="text-xs font-semibold text-slate-100 flex items-center gap-1.5">
+              ✨ Broadcasting visualized
+            </p>
+            <span class="text-[0.65rem] text-slate-400">click a scenario</span>
+          </div>
+
+          <div class="flex flex-wrap gap-2 mb-1">
+            <button data-broadcast="scalar" class="broadcast-btn text-[0.7rem] px-3 py-1.5 rounded-full border border-sky-400/60 bg-sky-500/15 text-sky-100 shadow-sm shadow-sky-900/70">
+              1D + scalar
+            </button>
+            <button data-broadcast="row" class="broadcast-btn text-[0.7rem] px-3 py-1.5 rounded-full border border-slate-600 bg-slate-900/90 text-slate-200">
+              2D + row (1D)
+            </button>
+            <button data-broadcast="col" class="broadcast-btn text-[0.7rem] px-3 py-1.5 rounded-full border border-slate-600 bg-slate-900/90 text-slate-200">
+              2D + column
+            </button>
+          </div>
+
+          <div class="text-[0.7rem] text-slate-300 mb-2 leading-relaxed" id="broadcast-text">
+            Each value in the 1D array is added to every element — NumPy silently “stretches”
+            the scalar to match the length of the vector.
+          </div>
+
+          <div class="grid grid-cols-3 gap-3 items-start text-[0.7rem]">
+            <div>
+              <p class="mb-1 text-slate-200 font-medium">A</p>
+              <div id="grid-a" class="mini-grid" style="grid-template-columns: repeat(3, minmax(0,1fr));">
+                <!-- filled by JS -->
+              </div>
+              <p id="shape-a" class="mt-1 text-[0.65rem] text-slate-400">shape (3,)</p>
+            </div>
+            <div>
+              <p class="mb-1 text-slate-200 font-medium">B</p>
+              <div id="grid-b" class="mini-grid" style="grid-template-columns: repeat(3, minmax(0,1fr));">
+                <!-- filled by JS -->
+              </div>
+              <p id="shape-b" class="mt-1 text-[0.65rem] text-slate-400">shape ()</p>
+            </div>
+            <div>
+              <p class="mb-1 text-slate-200 font-medium">A + B</p>
+              <div id="grid-result" class="mini-grid" style="grid-template-columns: repeat(3, minmax(0,1fr));">
+                <!-- filled by JS -->
+              </div>
+              <p id="shape-result" class="mt-1 text-[0.65rem] text-sky-300">shape (3,)</p>
+            </div>
+          </div>
+
+          <pre class="mt-2 mb-0"><code>
+<span class="code-comm"># scenario: 2D + column vector</span>
+A = np.array([
+    [1, 2, 3],
+    [4, 5, 6]
+])                      <span class="code-comm"># (2, 3)</span>
+
+b = np.array([[10],
+              [20]])    <span class="code-comm"># (2, 1)</span>
+
+A_plus_b = A + b        <span class="code-comm"># (2, 3) via broadcasting</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- pandas -->
+    <section id="pandas" class="reveal scroll-mt-24">
+      <div class="flex items-center justify-between mb-3 gap-2 mt-1">
+        <div>
+          <p class="text-xs uppercase tracking-[0.22em] text-emerald-300/80 mb-1">Step 2</p>
+          <h2 class="text-xl sm:text-2xl font-semibold tracking-tight text-slate-50 flex items-center gap-2">
+            pandas DataFrame operations
+          </h2>
+          <p class="text-xs text-slate-300 mt-1 max-w-xl">
+            pandas gives you spreadsheet‑like power in Python. You’ll work with columns and rows,
+            not manual loops.
+          </p>
+        </div>
+        <span class="hidden sm:inline-flex items-center px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/60 text-[0.7rem] text-emerald-100">
+          import pandas as pd
+        </span>
+      </div>
+
+      <div class="grid lg:grid-cols-[minmax(0,1.35fr)_minmax(0,0.9fr)] gap-6">
+        <!-- Code + concepts -->
+        <div class="soft-card rounded-2xl p-4 sm:p-5">
+          <p class="text-xs font-semibold text-emerald-200 mb-2">Minimal pandas workflow</p>
+          <pre><code>
+<span class="code-kw">import</span> pandas <span class="code-kw">as</span> pd
+
+<span class="code-comm"># 1. Load data (CSV file)</span>
+df = pd.read_csv(<span class="code-str">"data/customers.csv"</span>)
+
+<span class="code-comm"># 2. Quick overview</span>
+print(df.head())        <span class="code-comm"># first 5 rows</span>
+print(df.info())        <span class="code-comm"># columns &amp; types</span>
+print(df.describe())    <span class="code-comm"># numeric summary</span>
+
+<span class="code-comm"># 3. Select columns</span>
+age_income = df[[<span class="code-str">"age"</span>, <span class="code-str">"income"</span>]]
+
+<span class="code-comm"># 4. Filter rows</span>
+high_income = df[df[<span class="code-str">"income"</span>] &gt; <span class="code-num">80000</span>]
+
+<span class="code-comm"># 5. Create new column</span>
+df[<span class="code-str">"income_k"</span>] = df[<span class="code-str">"income"</span>] / <span class="code-num">1000</span>
+
+<span class="code-comm"># 6. Group &amp; aggregate</span>
+by_city = (
+    df.groupby(<span class="code-str">"city"</span>)[<span class="code-str">"income"</span>]
+      .mean()
+      .sort_values(ascending=<span class="code-kw">False</span>)
+)</code></pre>
+
+          <div class="grid sm:grid-cols-2 gap-3 mt-4 text-[0.7rem] text-slate-200">
+            <div class="border border-slate-700/80 rounded-xl p-2.5 bg-slate-950/70">
+              <p class="font-semibold text-emerald-200 mb-1">Key operations</p>
+              <ul class="space-y-1.5">
+                <li><span class="font-mono text-[0.65rem]">df["col"]</span> → single column (Series)</li>
+                <li><span class="font-mono text-[0.65rem]">df[["a","b"]]</span> → subset of columns</li>
+                <li><span class="font-mono text-[0.65rem]">df[df["a"] &gt; 0]</span> → filtered rows</li>
+                <li><span class="font-mono text-[0.65rem]">df.groupby("g").mean()</span></li>
+              </ul>
+            </div>
+            <div class="border border-slate-700/80 rounded-xl p-2.5 bg-slate-950/70">
+              <p class="font-semibold text-emerald-200 mb-1">Usage‑level checklist</p>
+              <ul class="space-y-1.5">
+                <li>Load/save CSVs: <span class="font-mono text-[0.65rem]">read_csv</span>, <span class="font-mono text-[0.65rem]">to_csv</span></li>
+                <li>Inspect: <span class="font-mono text-[0.65rem]">head</span>, <span class="font-mono text-[0.65rem]">info</span>, <span class="font-mono text-[0.65rem]">describe</span></li>
+                <li>Clean missing: <span class="font-mono text-[0.65rem]">dropna</span>, <span class="font-mono text-[0.65rem]">fillna</span></li>
+                <li>Encode categories for ML later.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Visual DataFrame mock -->
+        <div class="soft-card rounded-2xl p-4 sm:p-5">
+          <p class="text-xs font-semibold text-emerald-200 mb-2 flex items-center gap-1.5">
+            📊 DataFrame intuition
+          </p>
+          <p class="text-[0.72rem] text-slate-300 mb-3">
+            Think of a DataFrame as “Excel + NumPy”:
+            columns are labeled, rows have indices, but under the hood it uses fast arrays.
+          </p>
+
+          <div class="overflow-hidden rounded-xl border border-slate-700/80 bg-slate-950/80 text-[0.7rem]">
+            <div class="flex items-center justify-between px-3 py-1.5 bg-slate-900/80 border-b border-slate-800/80">
+              <div class="flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-rose-500/80"></span>
+                <span class="w-2 h-2 rounded-full bg-amber-400/80"></span>
+                <span class="w-2 h-2 rounded-full bg-emerald-400/80"></span>
+                <span class="ml-2 text-xs text-slate-300">customers.csv — df</span>
+              </div>
+              <span class="text-[0.65rem] text-slate-400">shape: (5, 4)</span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="min-w-full border-collapse text-left">
+                <thead class="bg-slate-900/80">
+                  <tr>
+                    <th class="px-3 py-1.5 text-slate-400 font-normal text-[0.65rem]">index</th>
+                    <th class="px-3 py-1.5 text-slate-200 font-medium">name</th>
+                    <th class="px-3 py-1.5 text-slate-200 font-medium">age</th>
+                    <th class="px-3 py-1.5 text-slate-200 font-medium">city</th>
+                    <th class="px-3 py-1.5 text-slate-200 font-medium">income</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="bg-slate-950/80">
+                    <td class="px-3 py-1.5 text-slate-500">0</td>
+                    <td class="px-3 py-1.5">Alice</td>
+                    <td class="px-3 py-1.5 text-sky-200">29</td>
+                    <td class="px-3 py-1.5">Berlin</td>
+                    <td class="px-3 py-1.5 text-emerald-300">72000</td>
+                  </tr>
+                  <tr class="bg-slate-950/60">
+                    <td class="px-3 py-1.5 text-slate-500">1</td>
+                    <td class="px-3 py-1.5">Bob</td>
+                    <td class="px-3 py-1.5 text-sky-200">41</td>
+                    <td class="px-3 py-1.5">Paris</td>
+                    <td class="px-3 py-1.5 text-emerald-300">91000</td>
+                  </tr>
+                  <tr class="bg-slate-950/80">
+                    <td class="px-3 py-1.5 text-slate-500">2</td>
+                    <td class="px-3 py-1.5">Carol</td>
+                    <td class="px-3 py-1.5 text-sky-200">35</td>
+                    <td class="px-3 py-1.5">Paris</td>
+                    <td class="px-3 py-1.5 text-emerald-300">65000</td>
+                  </tr>
+                  <tr class="bg-slate-950/60">
+                    <td class="px-3 py-1.5 text-slate-500">3</td>
+                    <td class="px-3 py-1.5">Dave</td>
+                    <td class="px-3 py-1.5 text-sky-200">27</td>
+                    <td class="px-3 py-1.5">Berlin</td>
+                    <td class="px-3 py-1.5 text-emerald-300">52000</td>
+                  </tr>
+                  <tr class="bg-slate-950/80">
+                    <td class="px-3 py-1.5 text-slate-500">4</td>
+                    <td class="px-3 py-1.5">Eve</td>
+                    <td class="px-3 py-1.5 text-sky-200">31</td>
+                    <td class="px-3 py-1.5">London</td>
+                    <td class="px-3 py-1.5 text-emerald-300">88000</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <p class="mt-3 text-[0.7rem] text-slate-300">
+            In ML, you’ll usually keep your features as a DataFrame until right before modeling,
+            then convert to NumPy with <span class="font-mono text-[0.65rem]">df.values</span> or
+            <span class="font-mono text-[0.65rem]">df.to_numpy()</span>.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- matplotlib -->
+    <section id="matplotlib" class="reveal scroll-mt-24">
+      <div class="flex items-center justify-between mb-3 gap-2 mt-1">
+        <div>
+          <p class="text-xs uppercase tracking-[0.22em] text-fuchsia-300/80 mb-1">Step 3</p>
+          <h2 class="text-xl sm:text-2xl font-semibold tracking-tight text-slate-50 flex items-center gap-2">
+            matplotlib for basic visualizations
+          </h2>
+          <p class="text-xs text-slate-300 mt-1 max-w-xl">
+            Before you train a model, you should look at your data.
+            matplotlib gives you the essential plots in a few lines of code.
+          </p>
+        </div>
+        <span class="hidden sm:inline-flex items-center px-3 py-1 rounded-full bg-fuchsia-500/15 border border-fuchsia-400/60 text-[0.7rem] text-fuchsia-100">
+          import matplotlib.pyplot as plt
+        </span>
+      </div>
+
+      <div class="grid lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1.1fr)] gap-6">
+        <!-- Code -->
+        <div class="soft-card rounded-2xl p-4 sm:p-5">
+          <p class="text-xs font-semibold text-fuchsia-200 mb-2">Three plots you’ll use all the time</p>
+          <pre><code>
+<span class="code-kw">import</span> matplotlib.pyplot <span class="code-kw">as</span> plt
+
+<span class="code-comm"># 1. Line plot (trend over x)</span>
+x = [1, 2, 3, 4, 5]
+y = [3, 4, 2, 5, 6]
+
+plt.figure(figsize=(6, 3))
+plt.plot(x, y, marker=<span class="code-str">"o"</span>, color=<span class="code-str">"dodgerblue"</span>)
+plt.title(<span class="code-str">"Line plot: metric over time"</span>)
+plt.xlabel(<span class="code-str">"epoch"</span>)
+plt.ylabel(<span class="code-str">"accuracy"</span>)
+plt.grid(<span class="code-kw">True</span>, alpha=<span class="code-num">0.3</span>)
+plt.show()
+
+<span class="code-comm"># 2. Scatter plot (relationship between 2 features)</span>
+plt.figure(figsize=(4, 4))
+plt.scatter(df[<span class="code-str">"age"</span>], df[<span class="code-str">"income"</span>],
+            alpha=<span class="code-num">0.7</span>, color=<span class="code-str">"mediumseagreen"</span>)
+plt.xlabel(<span class="code-str">"Age"</span>)
+plt.ylabel(<span class="code-str">"Income"</span>)
+plt.title(<span class="code-str">"Age vs income"</span>)
+plt.show()
+
+<span class="code-comm"># 3. Bar chart (aggregated categories)</span>
+avg_income_by_city = df.groupby(<span class="code-str">"city"</span>)[<span class="code-str">"income"</span>].mean()
+
+plt.figure(figsize=(5, 3))
+avg_income_by_city.plot(kind=<span class="code-str">"bar"</span>, color=<span class="code-str">"orchid"</span>)
+plt.ylabel(<span class="code-str">"Average income"</span>)
+plt.xticks(rotation=<span class="code-num">45</span>, ha=<span class="code-str">"right"</span>)
+plt.tight_layout()
+plt.show()</code></pre>
+        </div>
+
+        <!-- Animated chart mock -->
+        <div class="soft-card rounded-2xl p-4 sm:p-5 flex flex-col gap-3">
+          <p class="text-xs font-semibold text-fuchsia-200 flex items-center gap-1.5">
+            📈 Visual intuition (animated mock)
+          </p>
+          <p class="text-[0.72rem] text-slate-300">
+            These aren’t real matplotlib renders, but they show the kinds of patterns
+            you should look for before modeling.
+          </p>
+
+          <div class="grid sm:grid-cols-2 gap-3">
+            <!-- Line chart mock -->
+            <div class="relative border border-slate-700/80 rounded-xl p-2.5 bg-gradient-to-b from-slate-900/80 to-slate-950/80 overflow-hidden">
+              <p class="text-[0.7rem] text-fuchsia-100 mb-1 flex items-center justify-between">
+                Training accuracy
+                <span class="text-[0.6rem] text-slate-400">line</span>
+              </p>
+              <div class="relative h-28">
+                <svg viewBox="0 0 120 80" class="w-full h-full text-slate-500">
+                  <defs>
+                    <linearGradient id="lineGrad" x1="0" x2="1" y1="0" y2="0">
+                      <stop offset="0%" stop-color="#38bdf8" />
+                      <stop offset="100%" stop-color="#a855f7" />
+                    </linearGradient>
+                  </defs>
+                  <polyline
+                    id="line-curve"
+                    fill="none"
+                    stroke="url(#lineGrad)"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    points="5,70 25,55 45,50 65,40 85,32 105,28"
+                  />
+                  <g id="line-dots" fill="#38bdf8">
+                    <circle r="2.2" cx="5" cy="70"></circle>
+                    <circle r="2.2" cx="25" cy="55"></circle>
+                    <circle r="2.2" cx="45" cy="50"></circle>
+                    <circle r="2.2" cx="65" cy="40"></circle>
+                    <circle r="2.2" cx="85" cy="32"></circle>
+                    <circle r="2.2" cx="105" cy="28"></circle>
+                  </g>
+                </svg>
+              </div>
+              <p class="mt-1 text-[0.65rem] text-slate-300">
+                Smooth increase = model is learning. If training improves but validation doesn’t,
+                you may be overfitting.
+              </p>
+            </div>
+
+            <!-- Scatter + bar mock -->
+            <div class="space-y-2.5">
+              <div class="border border-slate-700/80 rounded-xl p-2.5 bg-slate-950/80">
+                <p class="text-[0.7rem] text-fuchsia-100 mb-1 flex items-center justify-between">
+                  Age vs income
+                  <span class="text-[0.6rem] text-slate-400">scatter</span>
+                </p>
+                <div class="relative h-20">
+                  <div class="absolute inset-1">
+                    <div class="absolute inset-0 border border-slate-800/90 rounded-md"></div>
+                    <div class="absolute inset-1">
+                      <!-- scatter dots -->
+                      <div class="w-1 h-1 rounded-full bg-emerald-400/80 absolute left-[8%] top-[72%]"></div>
+                      <div class="w-1 h-1 rounded-full bg-emerald-400/80 absolute left-[24%] top-[64%]"></div>
+                      <div class="w-1 h-1 rounded-full bg-emerald-400/80 absolute left-[34%] top-[52%]"></div>
+                      <div class="w-1 h-1 rounded-full bg-emerald-400/80 absolute left-[45%] top-[44%]"></div>
+                      <div class="w-1 h-1 rounded-full bg-emerald-400/80 absolute left-[61%] top-[36%]"></div>
+                      <div class="w-1 h-1 rounded-full bg-emerald-400/80 absolute left-[74%] top-[30%]"></div>
+                      <div class="w-1 h-1 rounded-full bg-emerald-400/80 absolute left-[86%] top-[26%]"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="border border-slate-700/80 rounded-xl p-2.5 bg-slate-950/80">
+                <p class="text-[0.7rem] text-fuchsia-100 mb-1 flex items-center justify-between">
+                  Income by city
+                  <span class="text-[0.6rem] text-slate-400">bar</span>
+                </p>
+                <div class="flex items-end gap-1 h-16">
+                  <div class="flex-1 bg-fuchsia-500/20 rounded-t-md border border-fuchsia-500/60" style="height:55%;"></div>
+                  <div class="flex-1 bg-fuchsia-500/40 rounded-t-md border border-fuchsia-400/80" style="height:85%;"></div>
+                  <div class="flex-1 bg-fuchsia-500/25 rounded-t-md border border-fuchsia-500/70" style="height:70%;"></div>
+                </div>
+                <div class="flex justify-between text-[0.6rem] text-slate-400 mt-0.5">
+                  <span>Berlin</span><span>Paris</span><span>London</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <p class="text-[0.68rem] text-slate-300">
+            For ML, focus on:
+            distributions (histograms), relationships (scatter), and trends over time (line).
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- scikit-learn -->
+    <section id="sklearn" class="reveal scroll-mt-24">
+      <div class="flex items-center justify-between mb-3 gap-2 mt-1">
+        <div>
+          <p class="text-xs uppercase tracking-[0.22em] text-amber-300/80 mb-1">Step 4</p>
+          <h2 class="text-xl sm:text-2xl font-semibold tracking-tight text-slate-50 flex items-center gap-2">
+            scikit‑learn: fit → predict → evaluate
+          </h2>
+          <p class="text-xs text-slate-300 mt-1 max-w-xl">
+            scikit‑learn wraps many ML algorithms behind the same simple API:
+            <span class="font-mono text-[0.7rem]">.fit(X, y)</span>,
+            <span class="font-mono text-[0.7rem]">.predict(X)</span>,
+            <span class="font-mono text-[0.7rem]">.score(...)</span> or dedicated metrics.
+          </p>
+        </div>
+        <span class="hidden sm:inline-flex items-center px-3 py-1 rounded-full bg-amber-400/15 border border-amber-300/70 text-[0.7rem] text-amber-100">
+          from sklearn import model_selection, metrics
+        </span>
+      </div>
+
+      <div class="soft-card rounded-2xl p-4 sm:p-5 mb-4">
+        <!-- Stepper -->
+        <div class="flex items-center gap-2 mb-4">
+          <div class="step-circle step-circle-active sklearn-step" data-step-circle="1">1</div>
+          <div class="step-line step-line-complete" data-step-line="1"></div>
+          <div class="step-circle sklearn-step" data-step-circle="2">2</div>
+          <div class="step-line" data-step-line="2"></div>
+          <div class="step-circle sklearn-step" data-step-circle="3">3</div>
+          <div class="step-line" data-step-line="3"></div>
+          <div class="step-circle sklearn-step" data-step-circle="4">4</div>
+        </div>
+
+        <div class="grid lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1.1fr)] gap-6 items-start">
+          <!-- Step explanations -->
+          <div class="space-y-3 text-[0.8rem]">
+            <div class="sk-step-card rounded-xl border border-slate-700/90 bg-slate-950/90 p-3.5" data-step="1">
+              <p class="font-semibold text-amber-100 mb-1.5 flex items-center gap-1.5">
+                1. Prepare features (X) and target (y)
+              </p>
+              <p class="text-slate-300 mb-1.5">
+                Choose which columns are inputs (features) and which column is the thing you want to predict (target).
+              </p>
+              <ul class="list-disc list-inside text-slate-300/90">
+                <li><span class="font-mono text-[0.72rem]">X</span> is usually a 2D array: <span class="font-mono text-[0.72rem]">(n_samples, n_features)</span></li>
+                <li><span class="font-mono text-[0.72rem]">y</span> is a 1D array: one value per row.</li>
+              </ul>
+            </div>
+
+            <div class="sk-step-card rounded-xl border border-slate-800 bg-slate-950/80 p-3.5 opacity-60" data-step="2">
+              <p class="font-semibold text-amber-100 mb-1.5">2. Train/test split</p>
+              <p class="text-slate-300">
+                Split your data into a training set (for fitting the model) and a test set
+                (for honest evaluation on unseen data).
+              </p>
+            </div>
+
+            <div class="sk-step-card rounded-xl border border-slate-800 bg-slate-950/80 p-3.5 opacity-60" data-step="3">
+              <p class="font-semibold text-amber-100 mb-1.5">3. Choose model &amp; fit</p>
+              <p class="text-slate-300">
+                Pick an algorithm (e.g. linear regression, random forest) and call
+                <span class="font-mono text-[0.7rem]">fit(X_train, y_train)</span>.
+              </p>
+            </div>
+
+            <div class="sk-step-card rounded-xl border border-slate-800 bg-slate-950/80 p-3.5 opacity-60" data-step="4">
+              <p class="font-semibold text-amber-100 mb-1.5">4. Predict &amp; evaluate</p>
+              <p class="text-slate-300">
+                Use <span class="font-mono text-[0.7rem]">predict</span> on the test set and
+                compute metrics like accuracy, MAE, or RMSE.
+              </p>
+            </div>
+          </div>
+
+          <!-- Code snippet: full workflow -->
+          <div>
+            <p class="text-xs font-semibold text-amber-200 mb-2">
+              End‑to‑end example: predicting house prices (regression)
+            </p>
+            <pre class="text-[0.78rem]"><code>
+<span class="code-kw">import</span> pandas <span class="code-kw">as</span> pd
+<span class="code-kw">from</span> sklearn.model_selection <span class="code-kw">import</span> train_test_split
+<span class="code-kw">from</span> sklearn.linear_model <span class="code-kw">import</span> LinearRegression
+<span class="code-kw">from</span> sklearn.metrics <span class="code-kw">import</span> mean_absolute_error
+
+<span class="code-comm"># 1. Load and prepare data</span>
+df = pd.read_csv(<span class="code-str">"data/housing.csv"</span>)
+feature_cols = [<span class="code-str">"sqft"</span>, <span class="code-str">"bedrooms"</span>, <span class="code-str">"age"</span>]
+X = df[feature_cols]          <span class="code-comm"># features (DataFrame / 2D)</span>
+y = df[<span class="code-str">"price"</span>]          <span class="code-comm"># target (Series / 1D)</span>
+
+<span class="code-comm"># 2. Split into train and test sets</span>
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=<span class="code-num">0.2</span>, random_state=<span class="code-num">42</span>
+)
+
+<span class="code-comm"># 3. Choose model and fit</span>
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+<span class="code-comm"># 4. Predict and evaluate</span>
+y_pred = model.predict(X_test)
+mae = mean_absolute_error(y_test, y_pred)
+print(<span class="code-str">f"Mean absolute error: {mae:.2f}"</span>)</code></pre>
+
+            <p class="mt-2 text-[0.7rem] text-slate-300">
+              Almost every scikit‑learn model (classification or regression) will follow this exact pattern.
+              Swap in a different estimator (e.g. <span class="font-mono text-[0.7rem]">RandomForestRegressor</span>)
+              to try stronger models with minimal code changes.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Summary -->
+    <section class="reveal">
+      <div class="glass rounded-2xl p-4 sm:p-5 mt-2">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p class="text-xs uppercase tracking-[0.22em] text-sky-300/80 mb-1">Recap</p>
+            <h3 class="text-sm sm:text-base font-semibold text-slate-50 mb-1">
+              You now have a complete ML “stack” at usage level
+            </h3>
+            <p class="text-[0.7rem] text-slate-300 max-w-xl">
+              NumPy for numeric arrays, pandas for tabular data, matplotlib for visual checks,
+              and scikit‑learn for models. Practice wiring them together on small datasets—
+              the patterns will transfer to bigger projects.
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-2 text-[0.65rem]">
+            <span class="px-2.5 py-1 rounded-full bg-slate-950/80 border border-sky-500/60 text-sky-100">
+              ✅ NumPy arrays &amp; broadcasting
+            </span>
+            <span class="px-2.5 py-1 rounded-full bg-slate-950/80 border border-emerald-500/60 text-emerald-100">
+              ✅ pandas DataFrame basics
+            </span>
+            <span class="px-2.5 py-1 rounded-full bg-slate-950/80 border border-fuchsia-500/60 text-fuchsia-100">
+              ✅ matplotlib quick plots
+            </span>
+            <span class="px-2.5 py-1 rounded-full bg-slate-950/80 border border-amber-400/70 text-amber-100">
+              ✅ scikit‑learn workflow
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Smooth scroll for header nav (for older browsers without CSS smooth behavior)
+    document.querySelectorAll('header nav a[href^="#"]').forEach(function(link) {
+      link.addEventListener('click', function (e) {
+        const targetId = this.getAttribute('href').slice(1);
+        const target = document.getElementById(targetId);
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+
+    // Scroll reveal animation
+    const revealEls = document.querySelectorAll('.reveal');
+    const revealObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('reveal-visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+
+    revealEls.forEach(el => revealObserver.observe(el));
+
+    // NumPy broadcasting demo
+    const broadcastBtns = document.querySelectorAll('.broadcast-btn');
+    const gridA = document.getElementById('grid-a');
+    const gridB = document.getElementById('grid-b');
+    const gridR = document.getElementById('grid-result');
+    const textEl = document.getElementById('broadcast-text');
+    const shapeA = document.getElementById('shape-a');
+    const shapeB = document.getElementById('shape-b');
+    const shapeR = document.getElementById('shape-result');
+
+    function setBroadcastScenario(type) {
+      // Clear grids
+      [gridA, gridB, gridR].forEach(g => g.innerHTML = '');
+
+      broadcastBtns.forEach(btn => {
+        if (btn.dataset.broadcast === type) {
+          btn.classList.add('border-sky-400/60','bg-sky-500/15','text-sky-100','shadow-sky-900/70');
+          btn.classList.remove('border-slate-600','bg-slate-900/90','text-slate-200');
+        } else {
+          btn.classList.remove('border-sky-400/60','bg-sky-500/15','text-sky-100','shadow-sky-900/70');
+          btn.classList.add('border-slate-600','bg-slate-900/90','text-slate-200');
+        }
+      });
+
+      if (type === 'scalar') {
+        // 1D vector + scalar
+        gridA.style.gridTemplateColumns = 'repeat(3, minmax(0,1fr))';
+        gridB.style.gridTemplateColumns = 'repeat(1, minmax(0,1fr))';
+        gridR.style.gridTemplateColumns = 'repeat(3, minmax(0,1fr))';
+
+        const aVals = [1, 2, 3];
+        const scalar = 10;
+        aVals.forEach(v => {
+          const c = document.createElement('div');
+          c.className = 'mini-cell';
+          c.textContent = v;
+          gridA.appendChild(c);
+        });
+
+        const cB = document.createElement('div');
+        cB.className = 'mini-cell highlight';
+        cB.textContent = scalar;
+        gridB.appendChild(cB);
+
+        aVals.forEach(v => {
+          const c = document.createElement('div');
+          c.className = 'mini-cell highlight';
+          c.textContent = v + scalar;
+          gridR.appendChild(c);
+        });
+
+        textEl.textContent =
+          'Each value in A gets +10. The scalar is broadcast to match the length of the vector.';
+        shapeA.textContent = 'shape (3,)';
+        shapeB.textContent = 'shape ()';
+        shapeR.textContent = 'shape (3,)';
+      } else if (type === 'row') {
+        // 2D + row vector
+        gridA.style.gridTemplateColumns = 'repeat(3, minmax(0,1fr))';
+        gridB.style.gridTemplateColumns = 'repeat(3, minmax(0,1fr))';
+        gridR.style.gridTemplateColumns = 'repeat(3, minmax(0,1fr))';
+
+        const A = [
+          [1, 2, 3],
+          [4, 5, 6]
+        ];
+        const b = [10, 20, 30];
+
+        A.flat().forEach(v => {
+          const c = document.createElement('div');
+          c.className = 'mini-cell';
+          c.textContent = v;
+          gridA.appendChild(c);
+        });
+
+        b.forEach(v => {
+          const c = document.createElement('div');
+          c.className = 'mini-cell highlight';
+          c.textContent = v;
+          gridB.appendChild(c);
+        });
+        // Empty second row in B for visual
+        b.forEach(() => {
+          const c = document.createElement('div');
+          c.className = 'mini-cell';
+          c.style.opacity = '0.22';
+          gridB.appendChild(c);
+        });
+
+        A.forEach((row, i) => {
+          row.forEach((v, j) => {
+            const c = document.createElement('div');
+            c.className = 'mini-cell highlight';
+            c.textContent = v + b[j];
+            gridR.appendChild(c);
+          });
+        });
+
+        textEl.textContent =
+          'Row vector [10, 20, 30] is broadcast across both rows of A, added column‑wise.';
+        shapeA.textContent = 'shape (2, 3)';
+        shapeB.textContent = 'shape (3,)';
+        shapeR.textContent = 'shape (2, 3)';
+      } else if (type === 'col') {
+        // 2D + column vector
+        gridA.style.gridTemplateColumns = 'repeat(3, minmax(0,1fr))';
+        gridB.style.gridTemplateColumns = 'repeat(1, minmax(0,1fr))';
+        gridR.style.gridTemplateColumns = 'repeat(3, minmax(0,1fr))';
+
+        const A = [
+          [1, 2, 3],
+          [4, 5, 6]
+        ];
+        const b = [10, 20];
+
+        A.flat().forEach(v => {
+          const c = document.createElement('div');
+          c.className = 'mini-cell';
+          c.textContent = v;
+          gridA.appendChild(c);
+        });
+
+        b.forEach(v => {
+          const c = document.createElement('div');
+          c.className = 'mini-cell highlight';
+          c.textContent = v;
+          gridB.appendChild(c);
+        });
+
+        A.forEach((row, i) => {
+          row.forEach(v => {
+            const c = document.createElement('div');
+            c.className = 'mini-cell highlight';
+            c.textContent = v + b[i];
+            gridR.appendChild(c);
+          });
+        });
+
+        textEl.textContent =
+          'Column vector [[10], [20]] is broadcast down each row of A, added row‑wise.';
+        shapeA.textContent = 'shape (2, 3)';
+        shapeB.textContent = 'shape (2, 1)';
+        shapeR.textContent = 'shape (2, 3)';
+      }
+    }
+
+    broadcastBtns.forEach(btn => {
+      btn.addEventListener('click', () => setBroadcastScenario(btn.dataset.broadcast));
+    });
+    // Default scenario
+    setBroadcastScenario('scalar');
+
+    // Simple animation on the SVG line: draw effect
+    (function animateLine() {
+      const line = document.getElementById('line-curve');
+      if (!line) return;
+      const length = line.getTotalLength();
+      line.style.strokeDasharray = length;
+      line.style.strokeDashoffset = length;
+      line.getBoundingClientRect(); // trigger layout
+      line.style.transition = 'stroke-dashoffset 1.2s ease-out';
+      line.style.strokeDashoffset = '0';
+
+      const dots = document.getElementById('line-dots');
+      if (dots) {
+        dots.style.opacity = '0';
+        dots.style.transition = 'opacity 0.8s ease-out 0.6s';
+        requestAnimationFrame(() => {
+          dots.style.opacity = '1';
+        });
+      }
+    })();
+
+    // scikit-learn stepper interaction
+    const stepCards = document.querySelectorAll('.sk-step-card');
+    const stepCircles = document.querySelectorAll('[data-step-circle]');
+    const stepLines = document.querySelectorAll('[data-step-line]');
+
+    function setStep(active) {
+      stepCards.forEach(card => {
+        const step = parseInt(card.dataset.step, 10);
+        if (step === active) {
+          card.classList.remove('opacity-60');
+          card.classList.add('border-amber-300/70');
+          card.style.transform = 'translateY(-2px)';
+        } else {
+          card.classList.add('opacity-60');
+          card.classList.remove('border-amber-300/70');
+          card.style.transform = 'translateY(0)';
+        }
+      });
+
+      stepCircles.forEach(circle => {
+        const step = parseInt(circle.dataset.stepCircle, 10);
+        if (step <= active) {
+          circle.classList.add('step-circle-active');
+        } else {
+          circle.classList.remove('step-circle-active');
+        }
+      });
+
+      stepLines.forEach(line => {
+        const step = parseInt(line.dataset.stepLine, 10);
+        if (step < active) {
+          line.classList.add('step-line-complete');
+        } else {
+          line.classList.remove('step-line-complete');
+        }
+      });
+    }
+
+    stepCircles.forEach(circle => {
+      circle.style.cursor = 'pointer';
+      circle.addEventListener('click', () => {
+        const step = parseInt(circle.dataset.stepCircle, 10);
+        setStep(step);
+      });
+    });
+  </script>
+</body>
+</html>
