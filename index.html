@@ -1,1155 +1,1122 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Module 6 – Python Libraries for Machine Learning</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#0a0f1f" />
+  <title>Math Mastery Quiz</title>
   <style>
-    :root {
-      color-scheme: dark;
-      --bg-gradient: radial-gradient(circle at top left, #1d4ed8, #020617 55%, #0f172a 100%);
-      --accent: #38bdf8;
-      --accent-soft: rgba(56, 189, 248, 0.12);
+    :root{
+      --bg: #0a0f1f;
+      --panel: rgba(255,255,255,0.07);
+      --panel-2: rgba(255,255,255,0.05);
+      --stroke: rgba(255,255,255,0.12);
+      --text: #e6ecff;
+      --muted: #9db0e7;
+      --accent-1: #6b9cff;
+      --accent-2: #9c6bff;
+      --accent-3: #00e0ff;
+      --good: #38e08d;
+      --bad: #ff6b6b;
+      --warn: #ffb86b;
+      --shadow-1: 0 10px 30px rgba(0,0,0,0.35);
+      --shadow-2: 0 10px 50px rgba(24, 78, 180, 0.35);
+      --radius-xl: 18px;
+      --radius-lg: 14px;
+      --radius-md: 10px;
+      --radius-sm: 8px;
+      --blur: 10px;
+      --speed: 300ms;
     }
-
-    * {
-      box-sizing: border-box;
-      scroll-behavior: smooth;
+    *{box-sizing:border-box}
+    html, body{
+      margin:0; padding:0; height:100%;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
     }
-
-    html, body {
-      margin: 0;
-      padding: 0;
-      min-height: 100%;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-      background: #020617;
-      color: #e5e7eb;
+    a{color:inherit; text-decoration:none;}
+    button{font:inherit; color:inherit; border:none; background:none; cursor:pointer}
+    .app{
+      position:relative; min-height:100vh; overflow-x:hidden;
+      display:flex; flex-direction:column;
     }
-
-    body {
-      background-image: var(--bg-gradient);
-      background-attachment: fixed;
-      background-size: cover;
+    /* Background visual */
+    .bg{
+      position:fixed; inset:0; z-index:-2; overflow:hidden;
+      background:
+        radial-gradient(1000px 1000px at 80% 10%, rgba(0, 185, 255, 0.15), transparent 60%),
+        radial-gradient(900px 900px at 10% 80%, rgba(153, 102, 255, 0.12), transparent 60%),
+        linear-gradient(120deg, #050912, #0a0f1f 50%, #0b1230);
     }
-
-    /* Glass / cards */
-    .glass {
-      background: radial-gradient(circle at top left, rgba(56,189,248,0.12), rgba(15,23,42,0.96));
-      border: 1px solid rgba(148,163,184,0.25);
-      box-shadow: 0 18px 60px rgba(15,23,42,0.8);
-      backdrop-filter: blur(18px);
+    .bg .blob{
+      position:absolute; filter: blur(60px); opacity:0.45; will-change: transform;
+      mix-blend-mode: screen;
     }
-    .soft-card {
-      background: rgba(15,23,42,0.88);
-      border: 1px solid rgba(148,163,184,0.18);
-      box-shadow: 0 16px 40px rgba(15,23,42,0.85);
+    .blob.one{ width:640px; height:640px; left:-120px; top:-120px; background: radial-gradient(circle at 30% 30%, #386bff, transparent 60%), radial-gradient(circle at 75% 70%, #00d0ff, transparent 50%); animation: drift1 18s ease-in-out infinite;}
+    .blob.two{ width:700px; height:700px; right:-180px; bottom:-140px; background: radial-gradient(circle at 60% 20%, #a86bff, transparent 60%), radial-gradient(circle at 20% 70%, #00ffc6, transparent 55%); animation: drift2 22s ease-in-out infinite;}
+    .noise{
+      position:fixed; inset:0; z-index:-1; pointer-events:none;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/></filter><rect width="120" height="120" filter="url(%23n)" opacity="0.025"/></svg>');
+      background-size: 220px 220px; mix-blend-mode: overlay;
     }
-
-    /* Animated gradient halo */
-    .halo {
-      position: absolute;
-      inset: auto;
-      width: 520px;
-      height: 520px;
-      border-radius: 999px;
-      background: conic-gradient(from 220deg, #38bdf8, #6366f1, #a855f7, #22c55e, #38bdf8);
-      opacity: 0.16;
-      filter: blur(60px);
-      animation: spin 24s linear infinite;
-      pointer-events: none;
-      z-index: -1;
+    @keyframes drift1{0%{transform:translate(0,0) scale(1)} 50%{transform:translate(40px,20px) scale(1.06)} 100%{transform:translate(0,0) scale(1)}}
+    @keyframes drift2{0%{transform:translate(0,0) scale(1)} 50%{transform:translate(-30px,-30px) scale(1.05)} 100%{transform:translate(0,0) scale(1)}}
+    /* Header */
+    .site-header{
+      position:sticky; top:0; z-index:5; backdrop-filter: blur(var(--blur)); -webkit-backdrop-filter: blur(var(--blur));
+      background: linear-gradient(to bottom, rgba(0,0,0,0.35), rgba(0,0,0,0.0));
+      border-bottom: 1px solid var(--stroke);
     }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    .nav{
+      max-width:1200px; margin:0 auto; padding:14px clamp(16px, 3vw, 28px);
+      display:flex; align-items:center; gap:16px; justify-content:space-between;
     }
-
-    /* Section reveal on scroll */
-    .reveal {
-      opacity: 0;
-      transform: translateY(22px) scale(0.98);
-      transition: opacity 0.7s ease, transform 0.7s ease;
+    .brand{
+      display:flex; align-items:center; gap:12px; font-weight:700; letter-spacing:0.3px;
     }
-    .reveal-visible {
-      opacity: 1;
-      transform: translateY(0) scale(1);
+    .brand .logo{
+      width:36px; height:36px; border-radius:12px;
+      background: conic-gradient(from 120deg, var(--accent-1), var(--accent-2), var(--accent-3), var(--accent-1));
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,0.25), var(--shadow-2);
     }
-
-    /* Code styling */
-    pre {
-      background: #020617;
-      border-radius: 0.75rem;
-      padding: 1rem 1.2rem;
-      overflow-x: auto;
-      border: 1px solid rgba(30,64,175,0.9);
-      box-shadow: 0 14px 40px rgba(15,23,42,0.85);
-      font-size: 0.78rem;
-      line-height: 1.6;
+    .badge{
+      display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px;
+      background: var(--panel); border:1px solid var(--stroke); color: var(--muted); font-size:13px;
     }
-    code {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      color: #e5e7eb;
-      white-space: pre;
+    .pill{
+      display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; font-size:12px;
+      background: rgba(255,255,255,0.06); border:1px solid var(--stroke); color:var(--muted);
     }
-
-    /* Simple "syntax" colors */
-    .code-kw { color: #60a5fa; }      /* keywords */
-    .code-fn { color: #22d3ee; }      /* functions */
-    .code-str { color: #34d399; }     /* strings */
-    .code-num { color: #facc15; }     /* numbers */
-    .code-comm { color: #6b7280; font-style: italic; }
-
-    /* Tabs / pills */
-    .top-tab {
-      transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+    .fs-status{display:flex; align-items:center; gap:8px;}
+    /* Containers */
+    .container{
+      max-width:1100px; margin:0 auto; padding: clamp(16px, 4vw, 32px);
+      width:100%;
     }
-    .top-tab:hover {
-      transform: translateY(-1px);
+    .panel{
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+      border:1px solid var(--stroke); border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-1); backdrop-filter: blur(var(--blur)); -webkit-backdrop-filter: blur(var(--blur));
     }
-    .top-tab-active {
-      background: linear-gradient(to right, #38bdf8, #6366f1);
-      color: #0f172a;
-      box-shadow: 0 10px 30px rgba(37,99,235,0.7);
+    .hero{
+      display:grid; grid-template-columns: 1.1fr 0.9fr; gap:24px; align-items:center; padding: 28px;
     }
-
-    /* sklearn stepper */
-    .step-circle {
-      width: 34px;
-      height: 34px;
-      border-radius: 999px;
-      border: 2px solid rgba(148,163,184,0.4);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.8rem;
-      transition: all 0.25s ease;
+    .hero h1{
+      font-size: clamp(28px, 5.2vw, 46px); margin:0 0 10px 0; line-height:1.1;
+      letter-spacing:0.2px; font-weight:800;
+      background: linear-gradient(120deg, #dfe7ff 0%, #7fb6ff 30%, #a78bfa 65%, #6df3ff 100%);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+      text-shadow: 0 2px 40px rgba(110, 180, 255, 0.2);
     }
-    .step-circle-active {
-      border-color: transparent;
-      background: linear-gradient(to bottom right, #38bdf8, #6366f1);
-      color: #0f172a;
-      box-shadow: 0 10px 30px rgba(59,130,246,0.8);
-      transform: translateY(-2px) scale(1.02);
+    .hero p{color: var(--muted); margin: 0 0 18px 0; font-size: clamp(14px, 2vw, 16px)}
+    .rules{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 22px}
+    .cta-row{display:flex; align-items:center; gap:12px; flex-wrap:wrap}
+    .btn{
+      padding:12px 18px; border-radius:12px; font-weight:700; letter-spacing:0.3px; transition: transform var(--speed), box-shadow var(--speed), filter var(--speed);
     }
-    .step-line {
-      flex: 1;
-      height: 2px;
-      background: linear-gradient(to right, rgba(148,163,184,0.3), rgba(30,64,175,0.7));
-      margin: 0 0.4rem;
-      position: relative;
-      overflow: hidden;
+    .btn-primary{
+      background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color:#fff; box-shadow: 0 8px 26px rgba(94,129,255,0.3);
     }
-    .step-line::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to right, #38bdf8, #6366f1);
-      width: 0;
-      transition: width 0.4s ease;
+    .btn-primary:hover{ transform: translateY(-1px); filter: brightness(1.05) }
+    .btn-ghost{
+      background: var(--panel-2); border: 1px solid var(--stroke); color: var(--text);
     }
-    .step-line-complete::after {
-      width: 100%;
+    .hero-visual{
+      position:relative; height: 320px; border-radius: var(--radius-lg); overflow:hidden; border:1px solid var(--stroke);
+      background: radial-gradient(100% 100% at 80% 0, rgba(130, 142, 255, 0.14), rgba(255,255,255,0.04) 60%), linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));
     }
-
-    /* Broadcasting demo grid */
-    .mini-grid {
-      display: grid;
-      gap: 2px;
-      padding: 4px;
-      border-radius: 0.5rem;
-      background: rgba(15,23,42,0.9);
-      border: 1px solid rgba(51,65,85,0.9);
-      font-size: 0.7rem;
+    .floating{
+      position:absolute; inset:0; overflow:hidden; perspective: 800px;
     }
-    .mini-cell {
-      min-width: 26px;
-      padding: 3px 4px;
-      text-align: center;
-      border-radius: 0.35rem;
-      background: rgba(15,23,42,0.9);
-      border: 1px solid rgba(51,65,85,0.7);
+    .chip{
+      position:absolute; padding:10px 12px; border-radius: 12px; font-size:13px; color:#e8f0ff;
+      background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04)); border: 1px solid rgba(255,255,255,0.15);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      animation: float 8s ease-in-out infinite;
     }
-    .mini-cell.highlight {
-      background: rgba(56,189,248,0.15);
-      border-color: rgba(56,189,248,0.9);
-      color: #e5f9ff;
+    .chip.c1{ left: 18px; top: 22px; transform: translateZ(30px) rotate(-2deg) }
+    .chip.c2{ right: 24px; top: 60px; transform: translateZ(45px) rotate(3deg); animation-delay: 1.2s}
+    .chip.c3{ left: 28px; bottom: 28px; transform: translateZ(25px) rotate(-1deg); animation-delay: 2.2s}
+    .chip.c4{ right: 30px; bottom: 36px; transform: translateZ(35px) rotate(2deg); animation-delay: 0.6s}
+    @keyframes float{0%,100%{transform: translateY(0) translateZ(30px)} 50%{transform: translateY(-10px) translateZ(30px)}}
+    /* Quiz */
+    .quiz{ margin-top: 22px; padding: 0 }
+    .quiz-header{
+      display:flex; align-items:center; justify-content:space-between; padding: 16px 18px; border-bottom:1px solid var(--stroke);
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); border-top-left-radius: var(--radius-xl); border-top-right-radius: var(--radius-xl);
     }
-
-    /* Mobile tweaks */
-    @media (max-width: 640px) {
-      .hero-title {
-        font-size: 1.9rem;
-        line-height: 1.2;
-      }
-      pre {
-        font-size: 0.76rem;
-      }
+    .q-progress{ display:flex; align-items:center; gap:12px; flex-wrap:wrap }
+    .bar{ width: min(58vw, 440px); height: 10px; border-radius:999px; background: rgba(255,255,255,0.08); overflow:hidden; border:1px solid var(--stroke)}
+    .bar > i{ display:block; height:100%; width:0%; background: linear-gradient(90deg, var(--accent-1), var(--accent-3)); transition: width 400ms ease}
+    .q-body{ display:grid; grid-template-columns: 0.95fr 0.55fr; gap: 18px; padding: 18px; }
+    .q-card{ padding: 18px; border: 1px solid var(--stroke); border-radius: var(--radius-lg); background: var(--panel) }
+    .q-label{ display:flex; align-items:center; gap:10px; color: var(--muted) }
+    .question{
+      margin: 8px 0 4px; font-weight:800; letter-spacing:0.2px;
+      font-size: clamp(18px, 3.4vw, 28px)
+    }
+    .options{
+      display:grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 14px;
+    }
+    .option{
+      position:relative; border:1px solid var(--stroke); border-radius: 14px; padding: 14px 14px; min-height: 60px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+      display:flex; align-items:center; gap:12px; transition: transform var(--speed), box-shadow var(--speed), border-color var(--speed), background var(--speed);
+    }
+    .option:hover{ transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,0,0,0.25); border-color: rgba(130,170,255,0.5) }
+    .option input{ display:none }
+    .opt-index{
+      width:30px; height:30px; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; font-weight:700;
+      background: rgba(255,255,255,0.08); border:1px solid var(--stroke); color:#d8e4ff;
+    }
+    .option.selected{ border-color: rgba(0, 255, 214, 0.6); box-shadow: 0 8px 28px rgba(0,255,214,0.15), inset 0 0 0 1px rgba(0,255,214,0.15) }
+    .option .oval{ margin-left:auto; width:20px; height:20px; border-radius:50%; border:2px solid rgba(255,255,255,0.3); position:relative }
+    .option.selected .oval{ border-color: #00e0ff }
+    .option.selected .oval::after{ content:""; position:absolute; inset:3px; border-radius:50%; background: linear-gradient(135deg, #00ffd5, #00b8ff) }
+    .side{
+      display:flex; flex-direction:column; gap: 12px;
+    }
+    .timer{
+      display:flex; align-items:center; gap:12px; padding: 14px; border:1px solid var(--stroke); border-radius: 14px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+    }
+    .ring{
+      --p: 1;
+      width:64px; height:64px; border-radius:50%;
+      background:
+        conic-gradient(from -90deg, #00ffd5 calc((1 - var(--p)) * 360deg), #ff6b6b 0 ),
+        radial-gradient(circle at 50% 50%, #0a0f1f 60%, transparent 61%);
+      display:grid; place-items:center;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12), 0 6px 22px rgba(0,0,0,0.3);
+    }
+    .ring small{ font-size:11px; color: var(--muted) }
+    .ring b{ font-size:18px }
+    .pill-cat{ font-weight:700; font-size:12px; color:#dfe7ff }
+    .actions{ display:flex; align-items:center; gap:10px; margin-top:6px; flex-wrap:wrap }
+    .btn-next{ background: linear-gradient(135deg, #00ffd5, #00b8ff); color:#003; }
+    .btn-submit{ background: linear-gradient(135deg, #7c4dff, #4e6bff); }
+    .btn:disabled{ opacity:0.6; cursor:not-allowed; filter:saturate(0.6) }
+    .keyboard{ font-size:12px; color: var(--muted) }
+    /* Results */
+    .results{ margin-top: 22px; overflow: hidden }
+    .res-hero{
+      display:grid; grid-template-columns: 0.7fr 1.3fr; gap:18px; padding: 18px;
+    }
+    .score-card{
+      padding:16px; border:1px solid var(--stroke); border-radius: var(--radius-lg); background: var(--panel); min-height: 220px;
+      display:flex; flex-direction:column; justify-content:center; gap:10px; text-align:center;
+    }
+    .score-number{
+      font-size: clamp(28px, 4.8vw, 44px); font-weight:900; letter-spacing:0.6px;
+      background: linear-gradient(120deg, #d5e2ff, #9ab7ff 45%, #9f88ff); -webkit-background-clip: text; color: transparent;
+      text-shadow: 0 2px 40px rgba(110, 180, 255, 0.25);
+    }
+    .stats{
+      display:grid; grid-template-columns: repeat(3, 1fr); gap:10px;
+    }
+    .stat{
+      padding:12px; border:1px solid var(--stroke); border-radius: 12px; background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+      display:flex; align-items:center; justify-content:space-between; gap:8px;
+    }
+    .stat b{ font-size:18px }
+    .chart-card{
+      padding:16px; border:1px solid var(--stroke); border-radius: var(--radius-lg); background: var(--panel); min-height: 220px;
+    }
+    .chart{ width:100%; height:260px }
+    .res-grid{
+      display:grid; grid-template-columns: 1fr 1fr; gap:18px; padding: 0 18px 18px;
+    }
+    .breakdown{ padding:16px; border:1px solid var(--stroke); border-radius: var(--radius-lg); background: var(--panel) }
+    .detail{ padding:16px; border:1px solid var(--stroke); border-radius: var(--radius-lg); background: var(--panel) }
+    .list{
+      max-height: 360px; overflow:auto; border:1px dashed var(--stroke); border-radius: 12px; padding:8px;
+    }
+    .row{
+      display:grid; grid-template-columns: 28px 1fr 120px 120px 80px; gap:10px; align-items:center;
+      padding:10px; border-bottom:1px dashed rgba(255,255,255,0.08);
+      font-size:13px;
+    }
+    .row .tag{ padding:4px 8px; border-radius:999px; font-weight:700; font-size:11px; text-align:center }
+    .tag.good{ background: rgba(56,224,141,0.18); color: #8ff3c1; border:1px solid rgba(56,224,141,0.3) }
+    .tag.bad{ background: rgba(255,107,107,0.18); color: #ffc2c2; border:1px solid rgba(255,107,107,0.35) }
+    .legend{ display:flex; align-items:center; gap:10px; color: var(--muted); font-size:12px; margin-top:8px }
+    .legend i{ display:inline-block; width:10px; height:10px; border-radius:50% }
+    .gauge{
+      --val: 0.7;
+      width: 140px; height: 140px; border-radius:50%;
+      background: conic-gradient(#38e08d calc(var(--val)*360deg), rgba(255,255,255,0.12) 0 );
+      display:grid; place-items:center; margin: 6px auto 0;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12);
+    }
+    .gauge::after{
+      content:""; width: 96px; height:96px; border-radius:50%; background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+      border:1px solid var(--stroke);
+    }
+    .gauge > b{
+      position:absolute; font-size:22px; font-weight:900;
+    }
+    .res-actions{ display:flex; align-items:center; gap:10px; margin-top:10px; flex-wrap:wrap }
+    .mini{ font-size:12px; color: var(--muted) }
+    /* Overlays */
+    .overlay{
+      position:fixed; inset:0; background: rgba(3,6,16,0.84); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      z-index:50; display:none; align-items:center; justify-content:center; padding:18px;
+    }
+    .overlay .modal{
+      width: min(560px, 96vw); background: var(--panel); border:1px solid var(--stroke); border-radius: 16px; padding: 18px; text-align:center; box-shadow: var(--shadow-1)
+    }
+    .warn{ color: #ffd7a6 }
+    .hidden{ display:none !important}
+    /* Footer */
+    .footer{
+      opacity:0.6; font-size:12px; text-align:center; padding: 22px 16px;
+    }
+    /* Responsive */
+    @media (max-width: 980px){
+      .hero{ grid-template-columns: 1fr; gap:16px }
+      .hero-visual{ height: 220px }
+      .q-body{ grid-template-columns: 1fr; }
+      .options{ grid-template-columns: 1fr; }
+      .res-hero{ grid-template-columns: 1fr; }
+      .res-grid{ grid-template-columns: 1fr; }
+      .row{ grid-template-columns: 24px 1fr 90px 90px 60px }
+      .bar{ width: 100% }
     }
   </style>
 </head>
-<body class="text-slate-100">
-  <div class="halo -top-32 -right-40"></div>
-  <div class="halo -bottom-40 -left-32 opacity-10"></div>
+<body>
+  <div class="app" id="app">
+    <div class="bg">
+      <div class="blob one"></div>
+      <div class="blob two"></div>
+    </div>
+    <div class="noise"></div>
 
-  <header class="sticky top-0 z-30 backdrop-blur-xl bg-slate-950/70 border-b border-slate-800/70">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
-      <div class="flex items-center gap-2">
-        <div class="w-9 h-9 rounded-2xl bg-gradient-to-br from-sky-400 via-indigo-500 to-fuchsia-500 flex items-center justify-center shadow-lg shadow-sky-500/60">
-          <span class="text-xs font-semibold tracking-tight">ML</span>
+    <header class="site-header">
+      <div class="nav">
+        <div class="brand">
+          <div class="logo" aria-hidden="true"></div>
+          <div>Math Mastery Quiz</div>
         </div>
-        <div class="leading-tight">
-          <p class="text-xs uppercase tracking-[0.2em] text-sky-300/80">Module 6</p>
-          <p class="text-sm font-semibold text-slate-50">Python ML Libraries</p>
+        <div class="fs-status">
+          <span class="badge" id="fsBadge">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#8fd7ff" xmlns="http://www.w3.org/2000/svg"><path d="M7 14H5v5h5v-2H7v-3zm0-4h2V7h3V5H7v5zm10 9h-3v2h5v-5h-2v3zm0-9h2V5h-5v2h3v3z"/></svg>
+            Fullscreen required
+          </span>
+          <span class="pill" id="guardPill" title="Anti-cheat enabled">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#7be7c4" xmlns="http://www.w3.org/2000/svg"><path d="M12 1l9 4v6c0 5-3.8 9.7-9 11-5.2-1.3-9-6-9-11V5l9-4zm0 2.2L5 6.1V11c0 4.1 2.9 7.8 7 8.9 4.1-1.1 7-4.8 7-8.9V6.1l-7-2.9zM7 11l3 3 7-7 1.4 1.4L10 16.8 5.6 12.4 7 11z"/></svg>
+            Anti-cheat active
+          </span>
         </div>
       </div>
+    </header>
 
-      <nav class="hidden md:flex items-center gap-1 text-xs">
-        <a href="#numpy" class="top-tab px-3 py-1.5 rounded-full bg-slate-900/70 border border-slate-700/80 text-slate-200">NumPy</a>
-        <a href="#pandas" class="top-tab px-3 py-1.5 rounded-full bg-slate-900/70 border border-slate-700/80 text-slate-200">pandas</a>
-        <a href="#matplotlib" class="top-tab px-3 py-1.5 rounded-full bg-slate-900/70 border border-slate-700/80 text-slate-200">matplotlib</a>
-        <a href="#sklearn" class="top-tab px-3 py-1.5 rounded-full bg-slate-900/70 border border-slate-700/80 text-slate-200">scikit-learn</a>
-      </nav>
+    <main class="container">
+      <!-- Intro -->
+      <section class="panel hero" id="intro">
+        <div>
+          <h1>Sharpen your speed with Multiplication, Squares & Cubes</h1>
+          <p>20 questions. 40 seconds per question. Fullscreen and focus required. Mobile-friendly, fast, and beautiful.</p>
+          <div class="rules">
+            <span class="pill">10 × Multiplication (12–25 by 1–20)</span>
+            <span class="pill">10 × Squares & Cubes (10²–30², 10³–30³)</span>
+            <span class="pill">Auto-advance every 40s</span>
+            <span class="pill">Submit anytime</span>
+            <span class="pill">Detailed analytics & charts</span>
+          </div>
+          <div class="cta-row">
+            <button class="btn btn-primary" id="startBtn">Start Quiz</button>
+            <button class="btn btn-ghost" id="fsBtn">Enter Fullscreen</button>
+            <span class="keyboard">Tip: Use number keys 1–4 to answer faster</span>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="floating">
+            <div class="chip c1">No new tabs allowed</div>
+            <div class="chip c2">40s per question</div>
+            <div class="chip c3">Auto submit at the end</div>
+            <div class="chip c4">Instant analytics</div>
+          </div>
+          <canvas id="fx" width="800" height="400" style="position:absolute; inset:0; width:100%; height:100%; opacity:0.55"></canvas>
+        </div>
+      </section>
 
-      <div class="flex items-center gap-2">
-        <span class="hidden sm:inline text-xs text-slate-400">Usage level · Hands-on</span>
-        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-sky-400/10 border border-sky-400/40 text-[0.65rem] uppercase tracking-[0.16em] text-sky-200">
-          🔹 ML Ready
-        </span>
+      <!-- Quiz -->
+      <section class="panel quiz hidden" id="quiz">
+        <div class="quiz-header">
+          <div class="q-progress">
+            <div id="qLabel">Question 1 of 20</div>
+            <div class="bar"><i id="qBar"></i></div>
+          </div>
+          <div class="pill" id="catPill">Category: —</div>
+        </div>
+        <div class="q-body">
+          <div class="q-card">
+            <div class="q-label">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#9db0e7" xmlns="http://www.w3.org/2000/svg"><path d="M21 7H7V3H5v4H3v2h2v6H3v2h2v4h2v-4h14v-2H7V9h14z"/></svg>
+              <span id="qType">—</span>
+            </div>
+            <div class="question" id="qText">Loading...</div>
+            <div class="options" id="options"></div>
+          </div>
+          <div class="side">
+            <div class="timer">
+              <div class="ring" id="ring">
+                <div style="display:grid; place-items:center">
+                  <small>SECS</small>
+                  <b id="sec">40</b>
+                </div>
+              </div>
+              <div>
+                <div class="pill-cat" id="pillCat2">—</div>
+                <div class="mini">If you run out of time, we auto-advance.</div>
+              </div>
+            </div>
+            <div class="actions">
+              <button class="btn btn-next" id="nextBtn" disabled>Next</button>
+              <button class="btn btn-submit" id="submitBtn">Submit Quiz</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Results -->
+      <section class="panel results hidden" id="results">
+        <div class="res-hero">
+          <div class="score-card">
+            <div class="mini">Your Score</div>
+            <div class="score-number" id="scoreText">0 / 20</div>
+            <div class="gauge" id="gauge" style="--val: 0.0"><b id="percent">0%</b></div>
+            <div class="res-actions">
+              <button class="btn btn-primary" id="retryBtn">Retry</button>
+              <button class="btn btn-ghost" id="downloadBtn">Download Report</button>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px">
+              <div><b>Time per Question</b></div>
+              <div class="legend">
+                <i style="background:#38e08d"></i> Correct
+                <i style="background:#ff6b6b"></i> Wrong/Unanswered
+              </div>
+            </div>
+            <div class="chart" id="chart"></div>
+          </div>
+        </div>
+        <div class="res-grid">
+          <div class="breakdown">
+            <b>Breakdown</b>
+            <div class="stats" style="margin-top:10px">
+              <div class="stat"><span>Correct</span><b id="cCount">0</b></div>
+              <div class="stat"><span>Wrong</span><b id="wCount">0</b></div>
+              <div class="stat"><span>Unanswered</span><b id="uCount">0</b></div>
+            </div>
+            <div class="stats" style="margin-top:10px">
+              <div class="stat"><span>Average time</span><b id="avgTime">0s</b></div>
+              <div class="stat"><span>Fastest</span><b id="fastest">0s</b></div>
+              <div class="stat"><span>Slowest</span><b id="slowest">0s</b></div>
+            </div>
+            <div class="stats" style="margin-top:10px">
+              <div class="stat"><span>Multiplication (10)</span><b id="mulStat">0 / 10</b></div>
+              <div class="stat"><span>Squares & Cubes (10)</span><b id="powStat">0 / 10</b></div>
+              <div class="stat"><span>Focus events</span><b id="focusOuts">0</b></div>
+            </div>
+          </div>
+          <div class="detail">
+            <b>Question Details</b>
+            <div class="list" id="detailList"></div>
+          </div>
+        </div>
+      </section>
+
+      <div class="footer">
+        Staying in fullscreen and on this tab is required. Some system/browser shortcuts may still override restrictions.
+      </div>
+    </main>
+  </div>
+
+  <!-- Overlays -->
+  <div class="overlay" id="fsOverlay">
+    <div class="modal">
+      <h3 style="margin:6px 0 8px">Fullscreen is required</h3>
+      <p class="warn">Please allow fullscreen to continue the quiz.</p>
+      <div style="margin-top:14px">
+        <button class="btn btn-primary" id="ovFsBtn">Enter Fullscreen</button>
+        <div class="mini" style="margin-top:6px">Mobile: rotate if needed. iOS may limit fullscreen support.</div>
       </div>
     </div>
-  </header>
-
-  <main class="max-w-6xl mx-auto px-4 sm:px-6 pb-16 pt-6 space-y-10">
-    <!-- Hero -->
-    <section class="reveal">
-      <div class="grid md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-8 items-center mt-3">
-        <div>
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/80 border border-sky-500/30 text-[0.7rem] text-sky-100 mb-4 shadow-md shadow-sky-900/80">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.85)]"></span>
-            Usage-level guide to core ML libraries
-          </div>
-          <h1 class="hero-title text-3xl sm:text-4xl md:text-[2.6rem] font-semibold tracking-tight mb-3 text-slate-50">
-            Python Libraries for Machine Learning
-          </h1>
-          <p class="text-sm sm:text-base text-slate-300 max-w-xl mb-5">
-            Learn how to actually <span class="text-sky-300 font-medium">use</span> NumPy, pandas, matplotlib, and
-            scikit-learn together: create arrays, wrangle DataFrames, plot insights, and run a full
-            <span class="text-emerald-300 font-medium">fit → predict → evaluate</span> workflow.
-          </p>
-
-          <div class="flex flex-wrap items-center gap-3 mb-4">
-            <a href="#numpy" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-sky-400 to-indigo-500 text-slate-950 text-sm font-semibold shadow-lg shadow-sky-900/80">
-              Start with NumPy
-              <span class="-mr-1 text-xs">↓</span>
-            </a>
-            <a href="#sklearn" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900/80 border border-slate-700/70 text-xs sm:text-sm text-slate-100 hover:border-sky-400/70 transition-colors">
-              Jump to full ML workflow
-            </a>
-          </div>
-
-          <div class="flex flex-wrap gap-2 text-[0.7rem] text-slate-300/90">
-            <span class="px-2.5 py-1 rounded-full bg-slate-900/80 border border-slate-700/80">✅ Beginner friendly</span>
-            <span class="px-2.5 py-1 rounded-full bg-slate-900/80 border border-slate-700/80">💻 Copy‑pasteable code</span>
-            <span class="px-2.5 py-1 rounded-full bg-slate-900/80 border border-slate-700/80">📊 Realistic examples</span>
-          </div>
-        </div>
-
-        <div class="glass rounded-2xl p-4 sm:p-5 relative overflow-hidden">
-          <div class="absolute -top-24 -right-24 w-64 h-64 bg-sky-500/20 rounded-full blur-3xl pointer-events-none"></div>
-          <p class="text-xs font-medium text-sky-200 mb-1.5">Big picture</p>
-          <p class="text-sm text-slate-100 mb-3">
-            A typical ML project flows through four layers:
-          </p>
-
-          <ol class="space-y-2.5 text-xs">
-            <li class="flex items-start gap-2.5">
-              <div class="mt-0.5 w-6 h-6 rounded-lg bg-sky-500/20 border border-sky-500/60 flex items-center justify-center text-[0.7rem] text-sky-100">1</div>
-              <div>
-                <p class="font-semibold text-sky-100">NumPy – numeric backbone</p>
-                <p class="text-slate-300/90">Efficient arrays, vectorized math, broadcasting for fast operations.</p>
-              </div>
-            </li>
-            <li class="flex items-start gap-2.5">
-              <div class="mt-0.5 w-6 h-6 rounded-lg bg-emerald-500/15 border border-emerald-500/60 flex items-center justify-center text-[0.7rem] text-emerald-100">2</div>
-              <div>
-                <p class="font-semibold text-emerald-100">pandas – table‑shaped data</p>
-                <p class="text-slate-300/90">Clean, filter, join, and summarize data in DataFrames.</p>
-              </div>
-            </li>
-            <li class="flex items-start gap-2.5">
-              <div class="mt-0.5 w-6 h-6 rounded-lg bg-fuchsia-500/15 border border-fuchsia-500/60 flex items-center justify-center text-[0.7rem] text-fuchsia-100">3</div>
-              <div>
-                <p class="font-semibold text-fuchsia-100">matplotlib – see patterns</p>
-                <p class="text-slate-300/90">Line, scatter, and bar charts to understand your data.</p>
-              </div>
-            </li>
-            <li class="flex items-start gap-2.5">
-              <div class="mt-0.5 w-6 h-6 rounded-lg bg-amber-400/20 border border-amber-400/70 flex items-center justify-center text-[0.7rem] text-amber-950">4</div>
-              <div>
-                <p class="font-semibold text-amber-100">scikit‑learn – fit models</p>
-                <p class="text-slate-300/90">Standard <span class="font-semibold">fit → predict → evaluate</span> pipeline for ML algorithms.</p>
-              </div>
-            </li>
-          </ol>
-
-          <div class="mt-4 pt-3 border-t border-slate-700/70 flex items-center justify-between gap-3">
-            <p class="text-[0.7rem] text-slate-300">
-              By the end, you’ll be able to wire these together into a full ML experiment.
-            </p>
-            <span class="px-3 py-1 rounded-full bg-slate-900/90 border border-slate-700/80 text-[0.65rem] text-slate-200">🚀 Let’s build it</span>
-          </div>
-        </div>
+  </div>
+  <div class="overlay" id="focusOverlay">
+    <div class="modal">
+      <h3 style="margin:6px 0 8px">Focus lost</h3>
+      <p class="warn">Please return to the quiz. Timers are paused.</p>
+      <div style="margin-top:14px">
+        <button class="btn btn-primary" id="resumeBtn">Resume</button>
       </div>
-    </section>
-
-    <!-- NumPy -->
-    <section id="numpy" class="reveal scroll-mt-24">
-      <div class="flex items-center justify-between mb-3 gap-2">
-        <div>
-          <p class="text-xs uppercase tracking-[0.22em] text-sky-300/80 mb-1">Step 1</p>
-          <h2 class="text-xl sm:text-2xl font-semibold tracking-tight text-slate-50 flex items-center gap-2">
-            NumPy arrays &amp; broadcasting
-          </h2>
-          <p class="text-xs text-slate-300 mt-1 max-w-xl">
-            NumPy is the numeric engine under almost every ML workflow: fast arrays, matrix math,
-            and smart “broadcasting” rules that make array shapes work together.
-          </p>
-        </div>
-        <span class="hidden sm:inline-flex items-center px-3 py-1 rounded-full bg-sky-500/15 border border-sky-400/50 text-[0.7rem] text-sky-100">
-          import numpy as np
-        </span>
+    </div>
+  </div>
+  <div class="overlay" id="blockOverlay">
+    <div class="modal">
+      <h3 style="margin:6px 0 8px">Action blocked</h3>
+      <p class="warn">Opening new tabs or using certain shortcuts is disabled during the quiz.</p>
+      <div style="margin-top:14px">
+        <button class="btn btn-primary" id="blockCloseBtn">Continue</button>
       </div>
+    </div>
+  </div>
 
-      <div class="grid lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] gap-6">
-        <!-- NumPy explanation + code -->
-        <div class="soft-card rounded-2xl p-4 sm:p-5">
-          <div class="flex flex-wrap items-center gap-2 mb-3">
-            <span class="text-xs font-semibold text-slate-200 flex items-center gap-1">
-              🔹 What you need to be able to do
-            </span>
-          </div>
-
-          <ul class="grid sm:grid-cols-2 gap-2.5 text-xs text-slate-200 mb-4">
-            <li class="flex items-start gap-2">
-              <span class="mt-0.5 w-1.5 h-1.5 rounded-full bg-sky-400"></span>
-              <span>Create 1D / 2D arrays from Python lists and ranges.</span>
-            </li>
-            <li class="flex items-start gap-2">
-              <span class="mt-0.5 w-1.5 h-1.5 rounded-full bg-sky-400"></span>
-              <span>Access elements with <span class="font-mono text-[0.66rem]">arr[i, j]</span> indexing.</span>
-            </li>
-            <li class="flex items-start gap-2">
-              <span class="mt-0.5 w-1.5 h-1.5 rounded-full bg-sky-400"></span>
-              <span>Apply vectorized math (<span class="font-mono text-[0.66rem]">+ - * /</span>) to whole arrays.</span>
-            </li>
-            <li class="flex items-start gap-2">
-              <span class="mt-0.5 w-1.5 h-1.5 rounded-full bg-sky-400"></span>
-              <span>Use broadcasting to combine different‑shaped arrays.</span>
-            </li>
-          </ul>
-
-          <p class="text-xs font-semibold text-sky-200 mb-2">Example: from lists to fast arrays</p>
-          <pre><code>
-<span class="code-kw">import</span> numpy <span class="code-kw">as</span> np
-
-<span class="code-comm"># 1D array (vector)</span>
-x = np.array([1, 2, 3, 4])
-print(x.shape)          <span class="code-comm"># (4,)</span>
-
-<span class="code-comm"># 2D array (matrix)</span>
-X = np.array([
-    [1, 2, 3],
-    [4, 5, 6]
-])
-print(X.shape)          <span class="code-comm"># (2, 3)</span>
-
-<span class="code-comm"># Vectorized math (fast, elementwise)</span>
-y = x * <span class="code-num">10</span> + <span class="code-num">5</span>
-print(y)                <span class="code-comm"># [15 25 35 45]</span>
-
-<span class="code-comm"># Basic statistics</span>
-print(x.mean(), x.std())</code></pre>
-
-          <p class="text-xs font-semibold text-sky-200 mt-4 mb-2">Broadcasting in practice</p>
-          <pre><code>
-X = np.array([
-    [1, 2, 3],
-    [4, 5, 6]
-])                      <span class="code-comm"># shape (2, 3)</span>
-
-row_means = X.mean(axis=<span class="code-num">1</span>, keepdims=<span class="code-kw">True</span>)
-<span class="code-comm"># row_means has shape (2, 1)</span>
-
-X_centered = X - row_means
-<span class="code-comm"># row_means is "stretched" across columns (broadcasted)
-# result shape is still (2, 3)</span></code></pre>
-        </div>
-
-        <!-- Broadcasting interactive demo -->
-        <div class="soft-card rounded-2xl p-4 sm:p-5 flex flex-col gap-3">
-          <div class="flex items-center justify-between gap-2">
-            <p class="text-xs font-semibold text-slate-100 flex items-center gap-1.5">
-              ✨ Broadcasting visualized
-            </p>
-            <span class="text-[0.65rem] text-slate-400">click a scenario</span>
-          </div>
-
-          <div class="flex flex-wrap gap-2 mb-1">
-            <button data-broadcast="scalar" class="broadcast-btn text-[0.7rem] px-3 py-1.5 rounded-full border border-sky-400/60 bg-sky-500/15 text-sky-100 shadow-sm shadow-sky-900/70">
-              1D + scalar
-            </button>
-            <button data-broadcast="row" class="broadcast-btn text-[0.7rem] px-3 py-1.5 rounded-full border border-slate-600 bg-slate-900/90 text-slate-200">
-              2D + row (1D)
-            </button>
-            <button data-broadcast="col" class="broadcast-btn text-[0.7rem] px-3 py-1.5 rounded-full border border-slate-600 bg-slate-900/90 text-slate-200">
-              2D + column
-            </button>
-          </div>
-
-          <div class="text-[0.7rem] text-slate-300 mb-2 leading-relaxed" id="broadcast-text">
-            Each value in the 1D array is added to every element — NumPy silently “stretches”
-            the scalar to match the length of the vector.
-          </div>
-
-          <div class="grid grid-cols-3 gap-3 items-start text-[0.7rem]">
-            <div>
-              <p class="mb-1 text-slate-200 font-medium">A</p>
-              <div id="grid-a" class="mini-grid" style="grid-template-columns: repeat(3, minmax(0,1fr));">
-                <!-- filled by JS -->
-              </div>
-              <p id="shape-a" class="mt-1 text-[0.65rem] text-slate-400">shape (3,)</p>
-            </div>
-            <div>
-              <p class="mb-1 text-slate-200 font-medium">B</p>
-              <div id="grid-b" class="mini-grid" style="grid-template-columns: repeat(3, minmax(0,1fr));">
-                <!-- filled by JS -->
-              </div>
-              <p id="shape-b" class="mt-1 text-[0.65rem] text-slate-400">shape ()</p>
-            </div>
-            <div>
-              <p class="mb-1 text-slate-200 font-medium">A + B</p>
-              <div id="grid-result" class="mini-grid" style="grid-template-columns: repeat(3, minmax(0,1fr));">
-                <!-- filled by JS -->
-              </div>
-              <p id="shape-result" class="mt-1 text-[0.65rem] text-sky-300">shape (3,)</p>
-            </div>
-          </div>
-
-          <pre class="mt-2 mb-0"><code>
-<span class="code-comm"># scenario: 2D + column vector</span>
-A = np.array([
-    [1, 2, 3],
-    [4, 5, 6]
-])                      <span class="code-comm"># (2, 3)</span>
-
-b = np.array([[10],
-              [20]])    <span class="code-comm"># (2, 1)</span>
-
-A_plus_b = A + b        <span class="code-comm"># (2, 3) via broadcasting</span></code></pre>
-        </div>
-      </div>
-    </section>
-
-    <!-- pandas -->
-    <section id="pandas" class="reveal scroll-mt-24">
-      <div class="flex items-center justify-between mb-3 gap-2 mt-1">
-        <div>
-          <p class="text-xs uppercase tracking-[0.22em] text-emerald-300/80 mb-1">Step 2</p>
-          <h2 class="text-xl sm:text-2xl font-semibold tracking-tight text-slate-50 flex items-center gap-2">
-            pandas DataFrame operations
-          </h2>
-          <p class="text-xs text-slate-300 mt-1 max-w-xl">
-            pandas gives you spreadsheet‑like power in Python. You’ll work with columns and rows,
-            not manual loops.
-          </p>
-        </div>
-        <span class="hidden sm:inline-flex items-center px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/60 text-[0.7rem] text-emerald-100">
-          import pandas as pd
-        </span>
-      </div>
-
-      <div class="grid lg:grid-cols-[minmax(0,1.35fr)_minmax(0,0.9fr)] gap-6">
-        <!-- Code + concepts -->
-        <div class="soft-card rounded-2xl p-4 sm:p-5">
-          <p class="text-xs font-semibold text-emerald-200 mb-2">Minimal pandas workflow</p>
-          <pre><code>
-<span class="code-kw">import</span> pandas <span class="code-kw">as</span> pd
-
-<span class="code-comm"># 1. Load data (CSV file)</span>
-df = pd.read_csv(<span class="code-str">"data/customers.csv"</span>)
-
-<span class="code-comm"># 2. Quick overview</span>
-print(df.head())        <span class="code-comm"># first 5 rows</span>
-print(df.info())        <span class="code-comm"># columns &amp; types</span>
-print(df.describe())    <span class="code-comm"># numeric summary</span>
-
-<span class="code-comm"># 3. Select columns</span>
-age_income = df[[<span class="code-str">"age"</span>, <span class="code-str">"income"</span>]]
-
-<span class="code-comm"># 4. Filter rows</span>
-high_income = df[df[<span class="code-str">"income"</span>] &gt; <span class="code-num">80000</span>]
-
-<span class="code-comm"># 5. Create new column</span>
-df[<span class="code-str">"income_k"</span>] = df[<span class="code-str">"income"</span>] / <span class="code-num">1000</span>
-
-<span class="code-comm"># 6. Group &amp; aggregate</span>
-by_city = (
-    df.groupby(<span class="code-str">"city"</span>)[<span class="code-str">"income"</span>]
-      .mean()
-      .sort_values(ascending=<span class="code-kw">False</span>)
-)</code></pre>
-
-          <div class="grid sm:grid-cols-2 gap-3 mt-4 text-[0.7rem] text-slate-200">
-            <div class="border border-slate-700/80 rounded-xl p-2.5 bg-slate-950/70">
-              <p class="font-semibold text-emerald-200 mb-1">Key operations</p>
-              <ul class="space-y-1.5">
-                <li><span class="font-mono text-[0.65rem]">df["col"]</span> → single column (Series)</li>
-                <li><span class="font-mono text-[0.65rem]">df[["a","b"]]</span> → subset of columns</li>
-                <li><span class="font-mono text-[0.65rem]">df[df["a"] &gt; 0]</span> → filtered rows</li>
-                <li><span class="font-mono text-[0.65rem]">df.groupby("g").mean()</span></li>
-              </ul>
-            </div>
-            <div class="border border-slate-700/80 rounded-xl p-2.5 bg-slate-950/70">
-              <p class="font-semibold text-emerald-200 mb-1">Usage‑level checklist</p>
-              <ul class="space-y-1.5">
-                <li>Load/save CSVs: <span class="font-mono text-[0.65rem]">read_csv</span>, <span class="font-mono text-[0.65rem]">to_csv</span></li>
-                <li>Inspect: <span class="font-mono text-[0.65rem]">head</span>, <span class="font-mono text-[0.65rem]">info</span>, <span class="font-mono text-[0.65rem]">describe</span></li>
-                <li>Clean missing: <span class="font-mono text-[0.65rem]">dropna</span>, <span class="font-mono text-[0.65rem]">fillna</span></li>
-                <li>Encode categories for ML later.</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <!-- Visual DataFrame mock -->
-        <div class="soft-card rounded-2xl p-4 sm:p-5">
-          <p class="text-xs font-semibold text-emerald-200 mb-2 flex items-center gap-1.5">
-            📊 DataFrame intuition
-          </p>
-          <p class="text-[0.72rem] text-slate-300 mb-3">
-            Think of a DataFrame as “Excel + NumPy”:
-            columns are labeled, rows have indices, but under the hood it uses fast arrays.
-          </p>
-
-          <div class="overflow-hidden rounded-xl border border-slate-700/80 bg-slate-950/80 text-[0.7rem]">
-            <div class="flex items-center justify-between px-3 py-1.5 bg-slate-900/80 border-b border-slate-800/80">
-              <div class="flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-rose-500/80"></span>
-                <span class="w-2 h-2 rounded-full bg-amber-400/80"></span>
-                <span class="w-2 h-2 rounded-full bg-emerald-400/80"></span>
-                <span class="ml-2 text-xs text-slate-300">customers.csv — df</span>
-              </div>
-              <span class="text-[0.65rem] text-slate-400">shape: (5, 4)</span>
-            </div>
-            <div class="overflow-x-auto">
-              <table class="min-w-full border-collapse text-left">
-                <thead class="bg-slate-900/80">
-                  <tr>
-                    <th class="px-3 py-1.5 text-slate-400 font-normal text-[0.65rem]">index</th>
-                    <th class="px-3 py-1.5 text-slate-200 font-medium">name</th>
-                    <th class="px-3 py-1.5 text-slate-200 font-medium">age</th>
-                    <th class="px-3 py-1.5 text-slate-200 font-medium">city</th>
-                    <th class="px-3 py-1.5 text-slate-200 font-medium">income</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr class="bg-slate-950/80">
-                    <td class="px-3 py-1.5 text-slate-500">0</td>
-                    <td class="px-3 py-1.5">Alice</td>
-                    <td class="px-3 py-1.5 text-sky-200">29</td>
-                    <td class="px-3 py-1.5">Berlin</td>
-                    <td class="px-3 py-1.5 text-emerald-300">72000</td>
-                  </tr>
-                  <tr class="bg-slate-950/60">
-                    <td class="px-3 py-1.5 text-slate-500">1</td>
-                    <td class="px-3 py-1.5">Bob</td>
-                    <td class="px-3 py-1.5 text-sky-200">41</td>
-                    <td class="px-3 py-1.5">Paris</td>
-                    <td class="px-3 py-1.5 text-emerald-300">91000</td>
-                  </tr>
-                  <tr class="bg-slate-950/80">
-                    <td class="px-3 py-1.5 text-slate-500">2</td>
-                    <td class="px-3 py-1.5">Carol</td>
-                    <td class="px-3 py-1.5 text-sky-200">35</td>
-                    <td class="px-3 py-1.5">Paris</td>
-                    <td class="px-3 py-1.5 text-emerald-300">65000</td>
-                  </tr>
-                  <tr class="bg-slate-950/60">
-                    <td class="px-3 py-1.5 text-slate-500">3</td>
-                    <td class="px-3 py-1.5">Dave</td>
-                    <td class="px-3 py-1.5 text-sky-200">27</td>
-                    <td class="px-3 py-1.5">Berlin</td>
-                    <td class="px-3 py-1.5 text-emerald-300">52000</td>
-                  </tr>
-                  <tr class="bg-slate-950/80">
-                    <td class="px-3 py-1.5 text-slate-500">4</td>
-                    <td class="px-3 py-1.5">Eve</td>
-                    <td class="px-3 py-1.5 text-sky-200">31</td>
-                    <td class="px-3 py-1.5">London</td>
-                    <td class="px-3 py-1.5 text-emerald-300">88000</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <p class="mt-3 text-[0.7rem] text-slate-300">
-            In ML, you’ll usually keep your features as a DataFrame until right before modeling,
-            then convert to NumPy with <span class="font-mono text-[0.65rem]">df.values</span> or
-            <span class="font-mono text-[0.65rem]">df.to_numpy()</span>.
-          </p>
-        </div>
-      </div>
-    </section>
-
-    <!-- matplotlib -->
-    <section id="matplotlib" class="reveal scroll-mt-24">
-      <div class="flex items-center justify-between mb-3 gap-2 mt-1">
-        <div>
-          <p class="text-xs uppercase tracking-[0.22em] text-fuchsia-300/80 mb-1">Step 3</p>
-          <h2 class="text-xl sm:text-2xl font-semibold tracking-tight text-slate-50 flex items-center gap-2">
-            matplotlib for basic visualizations
-          </h2>
-          <p class="text-xs text-slate-300 mt-1 max-w-xl">
-            Before you train a model, you should look at your data.
-            matplotlib gives you the essential plots in a few lines of code.
-          </p>
-        </div>
-        <span class="hidden sm:inline-flex items-center px-3 py-1 rounded-full bg-fuchsia-500/15 border border-fuchsia-400/60 text-[0.7rem] text-fuchsia-100">
-          import matplotlib.pyplot as plt
-        </span>
-      </div>
-
-      <div class="grid lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1.1fr)] gap-6">
-        <!-- Code -->
-        <div class="soft-card rounded-2xl p-4 sm:p-5">
-          <p class="text-xs font-semibold text-fuchsia-200 mb-2">Three plots you’ll use all the time</p>
-          <pre><code>
-<span class="code-kw">import</span> matplotlib.pyplot <span class="code-kw">as</span> plt
-
-<span class="code-comm"># 1. Line plot (trend over x)</span>
-x = [1, 2, 3, 4, 5]
-y = [3, 4, 2, 5, 6]
-
-plt.figure(figsize=(6, 3))
-plt.plot(x, y, marker=<span class="code-str">"o"</span>, color=<span class="code-str">"dodgerblue"</span>)
-plt.title(<span class="code-str">"Line plot: metric over time"</span>)
-plt.xlabel(<span class="code-str">"epoch"</span>)
-plt.ylabel(<span class="code-str">"accuracy"</span>)
-plt.grid(<span class="code-kw">True</span>, alpha=<span class="code-num">0.3</span>)
-plt.show()
-
-<span class="code-comm"># 2. Scatter plot (relationship between 2 features)</span>
-plt.figure(figsize=(4, 4))
-plt.scatter(df[<span class="code-str">"age"</span>], df[<span class="code-str">"income"</span>],
-            alpha=<span class="code-num">0.7</span>, color=<span class="code-str">"mediumseagreen"</span>)
-plt.xlabel(<span class="code-str">"Age"</span>)
-plt.ylabel(<span class="code-str">"Income"</span>)
-plt.title(<span class="code-str">"Age vs income"</span>)
-plt.show()
-
-<span class="code-comm"># 3. Bar chart (aggregated categories)</span>
-avg_income_by_city = df.groupby(<span class="code-str">"city"</span>)[<span class="code-str">"income"</span>].mean()
-
-plt.figure(figsize=(5, 3))
-avg_income_by_city.plot(kind=<span class="code-str">"bar"</span>, color=<span class="code-str">"orchid"</span>)
-plt.ylabel(<span class="code-str">"Average income"</span>)
-plt.xticks(rotation=<span class="code-num">45</span>, ha=<span class="code-str">"right"</span>)
-plt.tight_layout()
-plt.show()</code></pre>
-        </div>
-
-        <!-- Animated chart mock -->
-        <div class="soft-card rounded-2xl p-4 sm:p-5 flex flex-col gap-3">
-          <p class="text-xs font-semibold text-fuchsia-200 flex items-center gap-1.5">
-            📈 Visual intuition (animated mock)
-          </p>
-          <p class="text-[0.72rem] text-slate-300">
-            These aren’t real matplotlib renders, but they show the kinds of patterns
-            you should look for before modeling.
-          </p>
-
-          <div class="grid sm:grid-cols-2 gap-3">
-            <!-- Line chart mock -->
-            <div class="relative border border-slate-700/80 rounded-xl p-2.5 bg-gradient-to-b from-slate-900/80 to-slate-950/80 overflow-hidden">
-              <p class="text-[0.7rem] text-fuchsia-100 mb-1 flex items-center justify-between">
-                Training accuracy
-                <span class="text-[0.6rem] text-slate-400">line</span>
-              </p>
-              <div class="relative h-28">
-                <svg viewBox="0 0 120 80" class="w-full h-full text-slate-500">
-                  <defs>
-                    <linearGradient id="lineGrad" x1="0" x2="1" y1="0" y2="0">
-                      <stop offset="0%" stop-color="#38bdf8" />
-                      <stop offset="100%" stop-color="#a855f7" />
-                    </linearGradient>
-                  </defs>
-                  <polyline
-                    id="line-curve"
-                    fill="none"
-                    stroke="url(#lineGrad)"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    points="5,70 25,55 45,50 65,40 85,32 105,28"
-                  />
-                  <g id="line-dots" fill="#38bdf8">
-                    <circle r="2.2" cx="5" cy="70"></circle>
-                    <circle r="2.2" cx="25" cy="55"></circle>
-                    <circle r="2.2" cx="45" cy="50"></circle>
-                    <circle r="2.2" cx="65" cy="40"></circle>
-                    <circle r="2.2" cx="85" cy="32"></circle>
-                    <circle r="2.2" cx="105" cy="28"></circle>
-                  </g>
-                </svg>
-              </div>
-              <p class="mt-1 text-[0.65rem] text-slate-300">
-                Smooth increase = model is learning. If training improves but validation doesn’t,
-                you may be overfitting.
-              </p>
-            </div>
-
-            <!-- Scatter + bar mock -->
-            <div class="space-y-2.5">
-              <div class="border border-slate-700/80 rounded-xl p-2.5 bg-slate-950/80">
-                <p class="text-[0.7rem] text-fuchsia-100 mb-1 flex items-center justify-between">
-                  Age vs income
-                  <span class="text-[0.6rem] text-slate-400">scatter</span>
-                </p>
-                <div class="relative h-20">
-                  <div class="absolute inset-1">
-                    <div class="absolute inset-0 border border-slate-800/90 rounded-md"></div>
-                    <div class="absolute inset-1">
-                      <!-- scatter dots -->
-                      <div class="w-1 h-1 rounded-full bg-emerald-400/80 absolute left-[8%] top-[72%]"></div>
-                      <div class="w-1 h-1 rounded-full bg-emerald-400/80 absolute left-[24%] top-[64%]"></div>
-                      <div class="w-1 h-1 rounded-full bg-emerald-400/80 absolute left-[34%] top-[52%]"></div>
-                      <div class="w-1 h-1 rounded-full bg-emerald-400/80 absolute left-[45%] top-[44%]"></div>
-                      <div class="w-1 h-1 rounded-full bg-emerald-400/80 absolute left-[61%] top-[36%]"></div>
-                      <div class="w-1 h-1 rounded-full bg-emerald-400/80 absolute left-[74%] top-[30%]"></div>
-                      <div class="w-1 h-1 rounded-full bg-emerald-400/80 absolute left-[86%] top-[26%]"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="border border-slate-700/80 rounded-xl p-2.5 bg-slate-950/80">
-                <p class="text-[0.7rem] text-fuchsia-100 mb-1 flex items-center justify-between">
-                  Income by city
-                  <span class="text-[0.6rem] text-slate-400">bar</span>
-                </p>
-                <div class="flex items-end gap-1 h-16">
-                  <div class="flex-1 bg-fuchsia-500/20 rounded-t-md border border-fuchsia-500/60" style="height:55%;"></div>
-                  <div class="flex-1 bg-fuchsia-500/40 rounded-t-md border border-fuchsia-400/80" style="height:85%;"></div>
-                  <div class="flex-1 bg-fuchsia-500/25 rounded-t-md border border-fuchsia-500/70" style="height:70%;"></div>
-                </div>
-                <div class="flex justify-between text-[0.6rem] text-slate-400 mt-0.5">
-                  <span>Berlin</span><span>Paris</span><span>London</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <p class="text-[0.68rem] text-slate-300">
-            For ML, focus on:
-            distributions (histograms), relationships (scatter), and trends over time (line).
-          </p>
-        </div>
-      </div>
-    </section>
-
-    <!-- scikit-learn -->
-    <section id="sklearn" class="reveal scroll-mt-24">
-      <div class="flex items-center justify-between mb-3 gap-2 mt-1">
-        <div>
-          <p class="text-xs uppercase tracking-[0.22em] text-amber-300/80 mb-1">Step 4</p>
-          <h2 class="text-xl sm:text-2xl font-semibold tracking-tight text-slate-50 flex items-center gap-2">
-            scikit‑learn: fit → predict → evaluate
-          </h2>
-          <p class="text-xs text-slate-300 mt-1 max-w-xl">
-            scikit‑learn wraps many ML algorithms behind the same simple API:
-            <span class="font-mono text-[0.7rem]">.fit(X, y)</span>,
-            <span class="font-mono text-[0.7rem]">.predict(X)</span>,
-            <span class="font-mono text-[0.7rem]">.score(...)</span> or dedicated metrics.
-          </p>
-        </div>
-        <span class="hidden sm:inline-flex items-center px-3 py-1 rounded-full bg-amber-400/15 border border-amber-300/70 text-[0.7rem] text-amber-100">
-          from sklearn import model_selection, metrics
-        </span>
-      </div>
-
-      <div class="soft-card rounded-2xl p-4 sm:p-5 mb-4">
-        <!-- Stepper -->
-        <div class="flex items-center gap-2 mb-4">
-          <div class="step-circle step-circle-active sklearn-step" data-step-circle="1">1</div>
-          <div class="step-line step-line-complete" data-step-line="1"></div>
-          <div class="step-circle sklearn-step" data-step-circle="2">2</div>
-          <div class="step-line" data-step-line="2"></div>
-          <div class="step-circle sklearn-step" data-step-circle="3">3</div>
-          <div class="step-line" data-step-line="3"></div>
-          <div class="step-circle sklearn-step" data-step-circle="4">4</div>
-        </div>
-
-        <div class="grid lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1.1fr)] gap-6 items-start">
-          <!-- Step explanations -->
-          <div class="space-y-3 text-[0.8rem]">
-            <div class="sk-step-card rounded-xl border border-slate-700/90 bg-slate-950/90 p-3.5" data-step="1">
-              <p class="font-semibold text-amber-100 mb-1.5 flex items-center gap-1.5">
-                1. Prepare features (X) and target (y)
-              </p>
-              <p class="text-slate-300 mb-1.5">
-                Choose which columns are inputs (features) and which column is the thing you want to predict (target).
-              </p>
-              <ul class="list-disc list-inside text-slate-300/90">
-                <li><span class="font-mono text-[0.72rem]">X</span> is usually a 2D array: <span class="font-mono text-[0.72rem]">(n_samples, n_features)</span></li>
-                <li><span class="font-mono text-[0.72rem]">y</span> is a 1D array: one value per row.</li>
-              </ul>
-            </div>
-
-            <div class="sk-step-card rounded-xl border border-slate-800 bg-slate-950/80 p-3.5 opacity-60" data-step="2">
-              <p class="font-semibold text-amber-100 mb-1.5">2. Train/test split</p>
-              <p class="text-slate-300">
-                Split your data into a training set (for fitting the model) and a test set
-                (for honest evaluation on unseen data).
-              </p>
-            </div>
-
-            <div class="sk-step-card rounded-xl border border-slate-800 bg-slate-950/80 p-3.5 opacity-60" data-step="3">
-              <p class="font-semibold text-amber-100 mb-1.5">3. Choose model &amp; fit</p>
-              <p class="text-slate-300">
-                Pick an algorithm (e.g. linear regression, random forest) and call
-                <span class="font-mono text-[0.7rem]">fit(X_train, y_train)</span>.
-              </p>
-            </div>
-
-            <div class="sk-step-card rounded-xl border border-slate-800 bg-slate-950/80 p-3.5 opacity-60" data-step="4">
-              <p class="font-semibold text-amber-100 mb-1.5">4. Predict &amp; evaluate</p>
-              <p class="text-slate-300">
-                Use <span class="font-mono text-[0.7rem]">predict</span> on the test set and
-                compute metrics like accuracy, MAE, or RMSE.
-              </p>
-            </div>
-          </div>
-
-          <!-- Code snippet: full workflow -->
-          <div>
-            <p class="text-xs font-semibold text-amber-200 mb-2">
-              End‑to‑end example: predicting house prices (regression)
-            </p>
-            <pre class="text-[0.78rem]"><code>
-<span class="code-kw">import</span> pandas <span class="code-kw">as</span> pd
-<span class="code-kw">from</span> sklearn.model_selection <span class="code-kw">import</span> train_test_split
-<span class="code-kw">from</span> sklearn.linear_model <span class="code-kw">import</span> LinearRegression
-<span class="code-kw">from</span> sklearn.metrics <span class="code-kw">import</span> mean_absolute_error
-
-<span class="code-comm"># 1. Load and prepare data</span>
-df = pd.read_csv(<span class="code-str">"data/housing.csv"</span>)
-feature_cols = [<span class="code-str">"sqft"</span>, <span class="code-str">"bedrooms"</span>, <span class="code-str">"age"</span>]
-X = df[feature_cols]          <span class="code-comm"># features (DataFrame / 2D)</span>
-y = df[<span class="code-str">"price"</span>]          <span class="code-comm"># target (Series / 1D)</span>
-
-<span class="code-comm"># 2. Split into train and test sets</span>
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=<span class="code-num">0.2</span>, random_state=<span class="code-num">42</span>
-)
-
-<span class="code-comm"># 3. Choose model and fit</span>
-model = LinearRegression()
-model.fit(X_train, y_train)
-
-<span class="code-comm"># 4. Predict and evaluate</span>
-y_pred = model.predict(X_test)
-mae = mean_absolute_error(y_test, y_pred)
-print(<span class="code-str">f"Mean absolute error: {mae:.2f}"</span>)</code></pre>
-
-            <p class="mt-2 text-[0.7rem] text-slate-300">
-              Almost every scikit‑learn model (classification or regression) will follow this exact pattern.
-              Swap in a different estimator (e.g. <span class="font-mono text-[0.7rem]">RandomForestRegressor</span>)
-              to try stronger models with minimal code changes.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Summary -->
-    <section class="reveal">
-      <div class="glass rounded-2xl p-4 sm:p-5 mt-2">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p class="text-xs uppercase tracking-[0.22em] text-sky-300/80 mb-1">Recap</p>
-            <h3 class="text-sm sm:text-base font-semibold text-slate-50 mb-1">
-              You now have a complete ML “stack” at usage level
-            </h3>
-            <p class="text-[0.7rem] text-slate-300 max-w-xl">
-              NumPy for numeric arrays, pandas for tabular data, matplotlib for visual checks,
-              and scikit‑learn for models. Practice wiring them together on small datasets—
-              the patterns will transfer to bigger projects.
-            </p>
-          </div>
-          <div class="flex flex-wrap gap-2 text-[0.65rem]">
-            <span class="px-2.5 py-1 rounded-full bg-slate-950/80 border border-sky-500/60 text-sky-100">
-              ✅ NumPy arrays &amp; broadcasting
-            </span>
-            <span class="px-2.5 py-1 rounded-full bg-slate-950/80 border border-emerald-500/60 text-emerald-100">
-              ✅ pandas DataFrame basics
-            </span>
-            <span class="px-2.5 py-1 rounded-full bg-slate-950/80 border border-fuchsia-500/60 text-fuchsia-100">
-              ✅ matplotlib quick plots
-            </span>
-            <span class="px-2.5 py-1 rounded-full bg-slate-950/80 border border-amber-400/70 text-amber-100">
-              ✅ scikit‑learn workflow
-            </span>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
-
+  <!-- D3 for charts -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
   <script>
-    // Smooth scroll for header nav (for older browsers without CSS smooth behavior)
-    document.querySelectorAll('header nav a[href^="#"]').forEach(function(link) {
-      link.addEventListener('click', function (e) {
-        const targetId = this.getAttribute('href').slice(1);
-        const target = document.getElementById(targetId);
-        if (target) {
+    (function(){
+      const $ = s => document.querySelector(s);
+      const $$ = s => document.querySelectorAll(s);
+
+      const TOTAL_Q = 20;
+      const TIME_PER_Q = 40; // seconds
+      const MUL_COUNT = 10;
+      const POW_COUNT = 10;
+
+      const state = {
+        started: false,
+        questions: [],
+        current: 0,
+        timer: null,
+        timeLeft: TIME_PER_Q,
+        qStartAt: 0,
+        answers: [], // {selected: number|null, correct: boolean|null, time: number}
+        focusOuts: 0,
+        paused: false,
+        fullscreenNeeded: true
+      };
+
+      // Generate questions
+      function generateQuestions(){
+        const qs = [];
+        // 1) 10 Multiplication: a in 12..25, b in 1..20
+        const pickedPairs = new Set();
+        while(qs.filter(q=>q.category==='multiplication').length < MUL_COUNT){
+          const a = randInt(12,25);
+          const b = randInt(1,20);
+          const key = a+'x'+b;
+          if(pickedPairs.has(key)) continue;
+          pickedPairs.add(key);
+          const ans = a*b;
+          const opts = makeMultOptions(a,b,ans);
+          qs.push({
+            id: qs.length+1,
+            category:'multiplication',
+            text: `${a} × ${b} = ?`,
+            correct: ans,
+            options: shuffle(opts),
+            meta: {a,b}
+          });
+        }
+        // 2) 10 Squares & Cubes: ensure both types appear
+        const bases = Array.from({length:21},(_,i)=>i+10); // 10..30
+        const sqBases = shuffle([...bases]).slice(0,5);
+        const cbBases = shuffle([...bases]).slice(0,5);
+        for(const n of sqBases){
+          const ans = n*n;
+          const opts = makePowOptions(n,2,ans);
+          qs.push({
+            id: qs.length+1,
+            category:'pow',
+            text: `${n}<sup>2</sup> = ?`,
+            correct: ans,
+            options: shuffle(opts),
+            meta: {n, pow:2}
+          });
+        }
+        for(const n of cbBases){
+          const ans = n*n*n;
+          const opts = makePowOptions(n,3,ans);
+          qs.push({
+            id: qs.length+1,
+            category:'pow',
+            text: `${n}<sup>3</sup> = ?`,
+            correct: ans,
+            options: shuffle(opts),
+            meta: {n, pow:3}
+          });
+        }
+        // Keep order as spec: first mult then pow
+        state.questions = qs;
+        state.answers = Array(qs.length).fill(null);
+      }
+
+      function makeMultOptions(a,b,ans){
+        const s = new Set([ans]);
+        // Generate plausible distractors
+        const candidates = [];
+        candidates.push((a+1<=25? (a+1)*b : (a-1)*b));
+        candidates.push((b+1<=20? a*(b+1) : a*(b-1)));
+        candidates.push((a-1>=12? (a-1)*b : (a+1)*b));
+        candidates.push((b-1>=1? a*(b-1) : a*(b+1)));
+        // Some near +/- deltas
+        const deltas = [a, b, randInt(2,12), Math.round(ans*0.05), Math.round(ans*0.1)];
+        deltas.forEach(d => {
+          if(d>0){ candidates.push(ans + d) ; candidates.push(Math.max(1, ans - d));}
+        });
+        shuffle(candidates);
+        for(const c of candidates){
+          if(s.size>=4) break;
+          if(Number.isFinite(c) && c>0) s.add(c);
+        }
+        while(s.size<4){
+          const k = ans + randInt(-50, 50);
+          if(k>0) s.add(k);
+        }
+        return Array.from(s);
+      }
+
+      function makePowOptions(n,pow,ans){
+        const set = new Set([ans]);
+        const neigh = [1,2];
+        for(const d of neigh){
+          const hi = Math.pow(n+d,pow);
+          const lo = Math.pow(n-d,pow);
+          if(Number.isFinite(hi)) set.add(hi);
+          if(Number.isFinite(lo) && lo>0) set.add(lo);
+        }
+        // Slight offsets
+        const tweak = [Math.round(ans*0.05), Math.round(ans*0.1), pow===2? (2*n+1) : (3*n*n+3*n+1)];
+        for(const t of tweak){
+          if(t>0){
+            set.add(ans+t);
+            if(ans-t>0) set.add(ans-t);
+          }
+        }
+        while(set.size<4){
+          const noise = ans + randInt(-n*pow, n*pow);
+          if(noise>0) set.add(noise);
+        }
+        return Array.from(set).slice(0,4);
+      }
+
+      function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+      function shuffle(arr){
+        const a = arr.slice();
+        for(let i=a.length-1;i>0;i--){
+          const j = Math.floor(Math.random()*(i+1));
+          [a[i],a[j]]=[a[j],a[i]];
+        }
+        return a;
+      }
+
+      // UI
+      const screens = {
+        intro: $('#intro'),
+        quiz: $('#quiz'),
+        results: $('#results')
+      };
+      function showScreen(name){
+        Object.values(screens).forEach(el=>el.classList.add('hidden'));
+        screens[name].classList.remove('hidden');
+      }
+
+      // Render question
+      const qLabel = $('#qLabel');
+      const qBar = $('#qBar');
+      const qType = $('#qType');
+      const qText = $('#qText');
+      const optionsEl = $('#options');
+      const ring = $('#ring');
+      const secEl = $('#sec');
+      const catPill = $('#catPill');
+      const pillCat2 = $('#pillCat2');
+      const nextBtn = $('#nextBtn');
+      const submitBtn = $('#submitBtn');
+
+      function categoryLabel(q){
+        if(q.category==='multiplication') return 'Multiplication';
+        if(q.meta.pow===2) return 'Squares';
+        return 'Cubes';
+      }
+
+      function startQuestion(index){
+        if(index<0 || index>=state.questions.length) return;
+        state.current = index;
+        state.timeLeft = TIME_PER_Q;
+        state.qStartAt = performance.now();
+        state.paused = false;
+        updateHeader();
+        renderQuestion();
+        startTimer();
+      }
+
+      function updateHeader(){
+        const i = state.current+1;
+        const total = state.questions.length;
+        qLabel.textContent = `Question ${i} of ${total}`;
+        qBar.style.width = `${(i-1)/total*100}%`;
+        const q = state.questions[state.current];
+        const label = categoryLabel(q);
+        catPill.textContent = `Category: ${label}`;
+        pillCat2.textContent = label;
+        $('#qLabel').title = `Progress: ${(i-1)}/${total}`;
+      }
+
+      function renderQuestion(){
+        const q = state.questions[state.current];
+        qType.textContent = q.category==='multiplication' ? 'Solve the product' : (q.meta.pow===2?'Find the square':'Find the cube');
+        qText.innerHTML = q.text;
+        optionsEl.innerHTML = '';
+        const opts = q.options;
+        const abc = ['A','B','C','D'];
+        const prev = state.answers[state.current]?.selected ?? null;
+        opts.forEach((v,idx)=>{
+          const div = document.createElement('label');
+          div.className = 'option';
+          if(prev===v) div.classList.add('selected');
+          div.setAttribute('data-value', v);
+          div.innerHTML = `
+            <input type="radio" name="opt" value="${v}">
+            <span class="opt-index">${abc[idx]}</span>
+            <div class="opt-text" style="font-weight:700; font-size: clamp(16px, 2.4vw, 20px)">${formatNumber(v)}</div>
+            <span class="oval" aria-hidden="true"></span>
+          `;
+          div.addEventListener('click', ()=>{
+            $$('.option').forEach(o=>o.classList.remove('selected'));
+            div.classList.add('selected');
+            nextBtn.disabled = false;
+          });
+          optionsEl.appendChild(div);
+        });
+        nextBtn.disabled = prev==null;
+        ring.style.setProperty('--p', 1);
+        secEl.textContent = TIME_PER_Q;
+      }
+
+      function startTimer(){
+        stopTimer();
+        state.timer = setInterval(()=>{
+          if(state.paused) return;
+          state.timeLeft -= 1;
+          const p = Math.max(0, state.timeLeft) / TIME_PER_Q;
+          ring.style.setProperty('--p', p.toFixed(4));
+          secEl.textContent = Math.max(0, Math.ceil(state.timeLeft));
+          if(state.timeLeft<=0){
+            recordAnswer(null); // unanswered
+            autoNextOrSubmit();
+          }
+        }, 1000);
+      }
+
+      function stopTimer(){
+        if(state.timer){ clearInterval(state.timer); state.timer = null; }
+      }
+
+      function getSelectedValue(){
+        const sel = $('.option.selected');
+        if(!sel) return null;
+        const v = Number(sel.getAttribute('data-value'));
+        return Number.isFinite(v)? v : null;
+      }
+
+      function recordAnswer(selected){
+        // Only record if not already recorded this question or update if changed
+        const idx = state.current;
+        const q = state.questions[idx];
+        const elapsed = Math.min(TIME_PER_Q, Math.round((performance.now()-state.qStartAt)/1000));
+        const chosen = selected;
+        const correct = chosen!=null ? (chosen===q.correct) : false;
+        state.answers[idx] = { selected: chosen, correct: chosen===null ? false : correct, time: elapsed };
+      }
+
+      function autoNextOrSubmit(){
+        stopTimer();
+        const last = state.current === state.questions.length-1;
+        if(last){
+          submitQuiz();
+        }else{
+          startQuestion(state.current+1);
+        }
+      }
+
+      function nextQuestion(){
+        const chosen = getSelectedValue();
+        if(chosen==null) return;
+        recordAnswer(chosen);
+        autoNextOrSubmit();
+      }
+
+      function submitQuiz(){
+        stopTimer();
+        // Record current if missing
+        if(!state.answers[state.current]){
+          const sel = getSelectedValue();
+          if(sel==null){
+            recordAnswer(null);
+          }else{
+            recordAnswer(sel);
+          }
+        }
+        showResults();
+      }
+
+      // Results
+      const scoreText = $('#scoreText');
+      const gauge = $('#gauge');
+      const percentEl = $('#percent');
+      const cCount = $('#cCount');
+      const wCount = $('#wCount');
+      const uCount = $('#uCount');
+      const avgTime = $('#avgTime');
+      const fastest = $('#fastest');
+      const slowest = $('#slowest');
+      const mulStat = $('#mulStat');
+      const powStat = $('#powStat');
+      const focusOuts = $('#focusOuts');
+      const detailList = $('#detailList');
+
+      function showResults(){
+        showScreen('results');
+        const A = state.answers.map((a,i)=> a || {selected:null, correct:false, time:TIME_PER_Q});
+        const total = A.length;
+        let correctN = 0, wrongN = 0, unansN = 0;
+        let sumT = 0;
+        let mulCorrect=0, powCorrect=0;
+        let mulTotal=0, powTotal=0;
+        let minT = Infinity, maxT = -Infinity;
+
+        for(let i=0;i<total;i++){
+          const a = A[i];
+          const q = state.questions[i];
+          sumT += a.time;
+          minT = Math.min(minT, a.time);
+          maxT = Math.max(maxT, a.time);
+          if(a.selected==null) unansN++;
+          if(a.correct) correctN++; else wrongN++;
+          if(q.category==='multiplication'){ mulTotal++; if(a.correct) mulCorrect++; }
+          else { powTotal++; if(a.correct) powCorrect++; }
+        }
+        const pct = Math.round(correctN/total*100);
+        scoreText.textContent = `${correctN} / ${total}`;
+        percentEl.textContent = `${pct}%`;
+        gauge.style.setProperty('--val', (correctN/total).toFixed(3));
+        cCount.textContent = correctN;
+        wCount.textContent = wrongN - unansN;
+        uCount.textContent = unansN;
+        avgTime.textContent = `${(sumT/total).toFixed(1)}s`;
+        fastest.textContent = `${minT===Infinity?0:minT}s`;
+        slowest.textContent = `${maxT===-Infinity?0:maxT}s`;
+        mulStat.textContent = `${mulCorrect} / ${mulTotal}`;
+        powStat.textContent = `${powCorrect} / ${powTotal}`;
+        focusOuts.textContent = state.focusOuts;
+
+        // Detail list
+        detailList.innerHTML = '';
+        state.questions.forEach((q,i)=>{
+          const a = A[i];
+          const row = document.createElement('div');
+          row.className = 'row';
+          const tag = document.createElement('span');
+          tag.className = 'tag ' + (a.correct?'good':'bad');
+          tag.textContent = a.correct?'OK':'X';
+          row.appendChild(tag);
+
+          const txt = document.createElement('div');
+          txt.innerHTML = `${i+1}. ${q.text}`;
+          row.appendChild(txt);
+
+          const your = document.createElement('div');
+          your.innerHTML = `<span class="mini">Your:</span> <b>${a.selected==null? '—' : formatNumber(a.selected)}</b>`;
+          row.appendChild(your);
+
+          const corr = document.createElement('div');
+          corr.innerHTML = `<span class="mini">Ans:</span> <b>${formatNumber(q.correct)}</b>`;
+          row.appendChild(corr);
+
+          const t = document.createElement('div');
+          t.innerHTML = `<span class="mini">Time:</span> <b>${a.time}s</b>`;
+          row.appendChild(t);
+
+          detailList.appendChild(row);
+        });
+
+        // Chart
+        drawChart(A.map(a=>a.time), state.answers.map(a=>a?.correct??false));
+      }
+
+      function formatNumber(n){
+        const s = n.toString();
+        if(s.length<=6) return s;
+        return s.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      }
+
+      function drawChart(times, correctFlags){
+        const el = $('#chart');
+        el.innerHTML = '';
+        const w = el.clientWidth || 600;
+        const h = el.clientHeight || 260;
+        const m = {top:16,right:22,bottom:28,left:36};
+        const iw = w - m.left - m.right;
+        const ih = h - m.top - m.bottom;
+        const svg = d3.select(el).append('svg').attr('width', w).attr('height', h);
+        const g = svg.append('g').attr('transform', `translate(${m.left},${m.top})`);
+
+        const x = d3.scaleLinear().domain([1, times.length]).range([0, iw]);
+        const y = d3.scaleLinear().domain([0, TIME_PER_Q]).nice().range([ih, 0]);
+
+        const gx = g.append('g').attr('transform', `translate(0,${ih})`).call(d3.axisBottom(x).ticks(Math.min(10,times.length)).tickSizeOuter(0));
+        gx.selectAll('text').style('fill','#a9b8e8').style('font-size','11px');
+        gx.selectAll('path,line').style('stroke','rgba(255,255,255,0.15)');
+        const gy = g.append('g').call(d3.axisLeft(y).ticks(5).tickSizeOuter(0));
+        gy.selectAll('text').style('fill','#a9b8e8').style('font-size','11px');
+        gy.selectAll('path,line').style('stroke','rgba(255,255,255,0.15)');
+
+        g.append('g').selectAll('line.gridH')
+          .data(y.ticks(5)).enter().append('line')
+          .attr('x1',0).attr('x2',iw).attr('y1',d=>y(d)).attr('y2',d=>y(d))
+          .attr('stroke','rgba(255,255,255,0.08)');
+
+        const line = d3.line()
+          .x((d,i)=>x(i+1))
+          .y(d=>y(d))
+          .curve(d3.curveMonotoneX);
+        g.append('path')
+          .datum(times)
+          .attr('fill','none')
+          .attr('stroke','url(#gradLine)')
+          .attr('stroke-width',2.2)
+          .attr('d', line);
+
+        const defs = svg.append('defs');
+        const grad = defs.append('linearGradient').attr('id','gradLine').attr('x1','0').attr('x2','1').attr('y1','0').attr('y2','0');
+        grad.append('stop').attr('offset','0%').attr('stop-color','#7da7ff');
+        grad.append('stop').attr('offset','100%').attr('stop-color','#3df0ff');
+
+        // Avg line
+        const avg = d3.mean(times);
+        g.append('line')
+          .attr('x1',0).attr('x2',iw).attr('y1',y(avg)).attr('y2',y(avg))
+          .attr('stroke','rgba(255,255,255,0.25)').attr('stroke-dasharray','4,4');
+        g.append('text').attr('x',iw-4).attr('y',y(avg)-6).attr('text-anchor','end').text(`avg ${avg.toFixed(1)}s`)
+          .style('fill','#a9b8e8').style('font-size','10px');
+
+        const pts = g.selectAll('circle.pt').data(times).enter().append('circle')
+          .attr('class','pt')
+          .attr('cx',(d,i)=>x(i+1))
+          .attr('cy',d=>y(d))
+          .attr('r',4.2)
+          .attr('fill',(d,i)=> correctFlags[i] ? '#38e08d' : '#ff6b6b')
+          .attr('stroke','rgba(0,0,0,0.4)');
+
+        const tip = d3.select(el).append('div').style('position','absolute').style('pointer-events','none').style('padding','6px 8px').style('font-size','12px').style('background','rgba(8,12,24,0.9)').style('border','1px solid rgba(255,255,255,0.18)').style('border-radius','8px').style('backdrop-filter','blur(6px)').style('color','#cfe1ff').style('display','none');
+        pts.on('mouseenter', function(e, d){
+          const i = times.indexOf(d, this.__dataIndex??0);
+          tip.style('display','block').html(`Q${i+1}: <b>${d.toFixed(1)}s</b>`);
+        }).on('mousemove', function(e){
+          const rect = el.getBoundingClientRect();
+          tip.style('left', (e.clientX - rect.left + 12) + 'px').style('top', (e.clientY - rect.top - 6) + 'px');
+        }).on('mouseleave', ()=> tip.style('display','none'));
+      }
+
+      // Fullscreen
+      async function enterFullscreen(){
+        const el = document.documentElement;
+        try{
+          if(el.requestFullscreen) await el.requestFullscreen();
+          else if(el.webkitRequestFullscreen) await el.webkitRequestFullscreen();
+          else if(el.msRequestFullscreen) await el.msRequestFullscreen();
+          $('#fsBadge').innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="#7be7c4" xmlns="http://www.w3.org/2000/svg"><path d="M7 14H5v5h5v-2H7v-3zm0-4h2V7h3V5H7v5zm10 9h-3v2h5v-5h-2v3zm0-9h2V5h-5v2h3v3z"/></svg> Fullscreen on`;
+          $('#fsOverlay').style.display='none';
+          try{ if(screen.orientation && screen.orientation.lock){ await screen.orientation.lock('portrait'); } }catch(e){}
+          state.fullscreenNeeded = false;
+        }catch(e){
+          $('#fsOverlay').style.display='flex';
+        }
+      }
+      function isFullscreen(){
+        return document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+      }
+      document.addEventListener('fullscreenchange', ()=>{
+        if(isFullscreen()){
+          $('#fsBadge').innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="#7be7c4" xmlns="http://www.w3.org/2000/svg"><path d="M7 14H5v5h5v-2H7v-3zm0-4h2V7h3V5H7v5zm10 9h-3v2h5v-5h-2v3zm0-9h2V5h-5v2h3v3z"/></svg> Fullscreen on`;
+          $('#fsOverlay').style.display='none';
+        }else{
+          $('#fsBadge').innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="#ffcf7d" xmlns="http://www.w3.org/2000/svg"><path d="M7 14H5v5h5v-2H7v-3zm0-4h2V7h3V5H7v5zm10 9h-3v2h5v-5h-2v3zm0-9h2V5h-5v2h3v3z"/></svg> Fullscreen required`;
+          if(state.started && !state.paused){
+            pauseForFocusLoss('Please re-enter fullscreen to continue.');
+          }
+        }
+      });
+
+      // Focus & anti-cheat
+      function pauseForFocusLoss(msg){
+        state.paused = true;
+        stopTimer();
+        $('#focusOverlay .warn').textContent = msg || 'Please return to the quiz. Timers are paused.';
+        $('#focusOverlay').style.display='flex';
+        state.focusOuts++;
+      }
+      function resumeFromPause(){
+        $('#focusOverlay').style.display='none';
+        state.paused = false;
+        state.qStartAt = performance.now() - (TIME_PER_Q - state.timeLeft)*1000;
+        startTimer();
+      }
+      document.addEventListener('visibilitychange', ()=>{
+        if(document.hidden && state.started && screens.quiz && !screens.quiz.classList.contains('hidden')){
+          pauseForFocusLoss('Quiz paused because tab lost focus.');
+        }
+      });
+
+      // Block shortcuts/new tabs
+      function showBlock(){
+        const ov = $('#blockOverlay');
+        if(ov.style.display!=='flex'){
+          ov.style.display='flex';
+          setTimeout(()=>{},10);
+        }
+      }
+      $('#blockCloseBtn').addEventListener('click', ()=> $('#blockOverlay').style.display='none');
+      window.open = ()=>{ showBlock(); return null; };
+      document.addEventListener('contextmenu', e=> e.preventDefault(), {passive:false});
+      ['copy','cut','paste'].forEach(ev=> document.addEventListener(ev, e=> e.preventDefault()));
+      document.addEventListener('keydown', (e)=>{
+        const k = (e.key||'').toLowerCase();
+        const blockComb = (e.ctrlKey||e.metaKey) && ['t','n','w','l','r','o','p','s','i','j','k','h','[',']','+','-','=', '0'].includes(k);
+        const funcKeys = ['f11','f12'].includes(k);
+        const navKeys = (e.altKey && (k==='tab' || k==='left' || k==='right'));
+        if(blockComb || funcKeys || navKeys){
+          e.preventDefault(); e.stopPropagation(); showBlock(); return false;
+        }
+        // Answer shortcuts 1-4
+        if(!screens.quiz.classList.contains('hidden') && ['1','2','3','4'].includes(k)){
+          const idx = Number(k)-1;
+          const opt = $$('.option')[idx];
+          if(opt){ opt.click(); }
+        }
+        // Enter to next
+        if(k==='enter' && !screens.quiz.classList.contains('hidden')){
+          if(!nextBtn.disabled) nextQuestion();
+        }
+      }, {capture:true});
+
+      window.addEventListener('beforeunload', (e)=>{
+        if(state.started){
           e.preventDefault();
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      });
-    });
-
-    // Scroll reveal animation
-    const revealEls = document.querySelectorAll('.reveal');
-    const revealObserver = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('reveal-visible');
-          revealObserver.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.15 });
-
-    revealEls.forEach(el => revealObserver.observe(el));
-
-    // NumPy broadcasting demo
-    const broadcastBtns = document.querySelectorAll('.broadcast-btn');
-    const gridA = document.getElementById('grid-a');
-    const gridB = document.getElementById('grid-b');
-    const gridR = document.getElementById('grid-result');
-    const textEl = document.getElementById('broadcast-text');
-    const shapeA = document.getElementById('shape-a');
-    const shapeB = document.getElementById('shape-b');
-    const shapeR = document.getElementById('shape-result');
-
-    function setBroadcastScenario(type) {
-      // Clear grids
-      [gridA, gridB, gridR].forEach(g => g.innerHTML = '');
-
-      broadcastBtns.forEach(btn => {
-        if (btn.dataset.broadcast === type) {
-          btn.classList.add('border-sky-400/60','bg-sky-500/15','text-sky-100','shadow-sky-900/70');
-          btn.classList.remove('border-slate-600','bg-slate-900/90','text-slate-200');
-        } else {
-          btn.classList.remove('border-sky-400/60','bg-sky-500/15','text-sky-100','shadow-sky-900/70');
-          btn.classList.add('border-slate-600','bg-slate-900/90','text-slate-200');
+          e.returnValue = '';
         }
       });
 
-      if (type === 'scalar') {
-        // 1D vector + scalar
-        gridA.style.gridTemplateColumns = 'repeat(3, minmax(0,1fr))';
-        gridB.style.gridTemplateColumns = 'repeat(1, minmax(0,1fr))';
-        gridR.style.gridTemplateColumns = 'repeat(3, minmax(0,1fr))';
+      // Controls
+      $('#startBtn').addEventListener('click', async ()=>{
+        generateQuestions();
+        state.started = true;
+        showScreen('quiz');
+        await enterFullscreen();
+        startQuestion(0);
+      });
+      $('#fsBtn').addEventListener('click', enterFullscreen);
+      $('#ovFsBtn').addEventListener('click', enterFullscreen);
+      $('#resumeBtn').addEventListener('click', resumeFromPause);
 
-        const aVals = [1, 2, 3];
-        const scalar = 10;
-        aVals.forEach(v => {
-          const c = document.createElement('div');
-          c.className = 'mini-cell';
-          c.textContent = v;
-          gridA.appendChild(c);
-        });
+      nextBtn.addEventListener('click', nextQuestion);
+      submitBtn.addEventListener('click', submitQuiz);
+      $('#retryBtn').addEventListener('click', ()=>{
+        stopTimer();
+        state.started = false;
+        state.focusOuts = 0;
+        generateQuestions();
+        showScreen('intro');
+        detailList.innerHTML = '';
+        $('#chart').innerHTML = '';
+      });
+      $('#downloadBtn').addEventListener('click', ()=>{
+        const report = buildReport();
+        const blob = new Blob([JSON.stringify(report,null,2)], {type:'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = `math-quiz-report-${Date.now()}.json`;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
 
-        const cB = document.createElement('div');
-        cB.className = 'mini-cell highlight';
-        cB.textContent = scalar;
-        gridB.appendChild(cB);
-
-        aVals.forEach(v => {
-          const c = document.createElement('div');
-          c.className = 'mini-cell highlight';
-          c.textContent = v + scalar;
-          gridR.appendChild(c);
-        });
-
-        textEl.textContent =
-          'Each value in A gets +10. The scalar is broadcast to match the length of the vector.';
-        shapeA.textContent = 'shape (3,)';
-        shapeB.textContent = 'shape ()';
-        shapeR.textContent = 'shape (3,)';
-      } else if (type === 'row') {
-        // 2D + row vector
-        gridA.style.gridTemplateColumns = 'repeat(3, minmax(0,1fr))';
-        gridB.style.gridTemplateColumns = 'repeat(3, minmax(0,1fr))';
-        gridR.style.gridTemplateColumns = 'repeat(3, minmax(0,1fr))';
-
-        const A = [
-          [1, 2, 3],
-          [4, 5, 6]
-        ];
-        const b = [10, 20, 30];
-
-        A.flat().forEach(v => {
-          const c = document.createElement('div');
-          c.className = 'mini-cell';
-          c.textContent = v;
-          gridA.appendChild(c);
-        });
-
-        b.forEach(v => {
-          const c = document.createElement('div');
-          c.className = 'mini-cell highlight';
-          c.textContent = v;
-          gridB.appendChild(c);
-        });
-        // Empty second row in B for visual
-        b.forEach(() => {
-          const c = document.createElement('div');
-          c.className = 'mini-cell';
-          c.style.opacity = '0.22';
-          gridB.appendChild(c);
-        });
-
-        A.forEach((row, i) => {
-          row.forEach((v, j) => {
-            const c = document.createElement('div');
-            c.className = 'mini-cell highlight';
-            c.textContent = v + b[j];
-            gridR.appendChild(c);
-          });
-        });
-
-        textEl.textContent =
-          'Row vector [10, 20, 30] is broadcast across both rows of A, added column‑wise.';
-        shapeA.textContent = 'shape (2, 3)';
-        shapeB.textContent = 'shape (3,)';
-        shapeR.textContent = 'shape (2, 3)';
-      } else if (type === 'col') {
-        // 2D + column vector
-        gridA.style.gridTemplateColumns = 'repeat(3, minmax(0,1fr))';
-        gridB.style.gridTemplateColumns = 'repeat(1, minmax(0,1fr))';
-        gridR.style.gridTemplateColumns = 'repeat(3, minmax(0,1fr))';
-
-        const A = [
-          [1, 2, 3],
-          [4, 5, 6]
-        ];
-        const b = [10, 20];
-
-        A.flat().forEach(v => {
-          const c = document.createElement('div');
-          c.className = 'mini-cell';
-          c.textContent = v;
-          gridA.appendChild(c);
-        });
-
-        b.forEach(v => {
-          const c = document.createElement('div');
-          c.className = 'mini-cell highlight';
-          c.textContent = v;
-          gridB.appendChild(c);
-        });
-
-        A.forEach((row, i) => {
-          row.forEach(v => {
-            const c = document.createElement('div');
-            c.className = 'mini-cell highlight';
-            c.textContent = v + b[i];
-            gridR.appendChild(c);
-          });
-        });
-
-        textEl.textContent =
-          'Column vector [[10], [20]] is broadcast down each row of A, added row‑wise.';
-        shapeA.textContent = 'shape (2, 3)';
-        shapeB.textContent = 'shape (2, 1)';
-        shapeR.textContent = 'shape (2, 3)';
+      function buildReport(){
+        const items = state.questions.map((q,i)=>({
+          index: i+1,
+          category: categoryLabel(q),
+          text: q.text.replace(/<[^>]+>/g,''),
+          options: q.options,
+          correct: q.correct,
+          selected: state.answers[i]?.selected ?? null,
+          isCorrect: state.answers[i]?.correct ?? false,
+          time: state.answers[i]?.time ?? TIME_PER_Q
+        }));
+        const correctCount = items.filter(x=>x.isCorrect).length;
+        return {
+          score: `${correctCount} / ${items.length}`,
+          percent: Math.round(correctCount/items.length*100),
+          focusEvents: state.focusOuts,
+          timePerQuestion: items.map(x=>x.time),
+          items
+        };
       }
-    }
 
-    broadcastBtns.forEach(btn => {
-      btn.addEventListener('click', () => setBroadcastScenario(btn.dataset.broadcast));
-    });
-    // Default scenario
-    setBroadcastScenario('scalar');
-
-    // Simple animation on the SVG line: draw effect
-    (function animateLine() {
-      const line = document.getElementById('line-curve');
-      if (!line) return;
-      const length = line.getTotalLength();
-      line.style.strokeDasharray = length;
-      line.style.strokeDashoffset = length;
-      line.getBoundingClientRect(); // trigger layout
-      line.style.transition = 'stroke-dashoffset 1.2s ease-out';
-      line.style.strokeDashoffset = '0';
-
-      const dots = document.getElementById('line-dots');
-      if (dots) {
-        dots.style.opacity = '0';
-        dots.style.transition = 'opacity 0.8s ease-out 0.6s';
-        requestAnimationFrame(() => {
-          dots.style.opacity = '1';
+      // FX Canvas
+      function fx(){
+        const c = $('#fx');
+        if(!c) return;
+        const ctx = c.getContext('2d');
+        let W = c.width = c.clientWidth * devicePixelRatio;
+        let H = c.height = c.clientHeight * devicePixelRatio;
+        const dots = Array.from({length:60}, ()=>({
+          x: Math.random()*W, y: Math.random()*H,
+          vx: (Math.random()*2-1)*0.12*devicePixelRatio,
+          vy: (Math.random()*2-1)*0.12*devicePixelRatio,
+          r: (Math.random()*2+1)*devicePixelRatio
+        }));
+        function step(){
+          ctx.clearRect(0,0,W,H);
+          for(const d of dots){
+            d.x += d.vx; d.y += d.vy;
+            if(d.x<0||d.x>W) d.vx*=-1;
+            if(d.y<0||d.y>H) d.vy*=-1;
+          }
+          // connections
+          for(let i=0;i<dots.length;i++){
+            const a = dots[i];
+            for(let j=i+1;j<dots.length;j++){
+              const b = dots[j];
+              const dx=a.x-b.x, dy=a.y-b.y;
+              const dist = Math.hypot(dx,dy);
+              if(dist<120*devicePixelRatio){
+                const alpha = 1 - dist/(120*devicePixelRatio);
+                ctx.strokeStyle = `rgba(130,170,255,${alpha*0.24})`;
+                ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+              }
+            }
+          }
+          for(const d of dots){
+            ctx.beginPath();
+            const grad = ctx.createRadialGradient(d.x,d.y,0,d.x,d.y,d.r*2);
+            grad.addColorStop(0, 'rgba(120,200,255,0.9)');
+            grad.addColorStop(1, 'rgba(120,200,255,0)');
+            ctx.fillStyle = grad;
+            ctx.arc(d.x,d.y,d.r,0,Math.PI*2);
+            ctx.fill();
+          }
+          requestAnimationFrame(step);
+        }
+        step();
+        window.addEventListener('resize', ()=>{
+          W = c.width = c.clientWidth * devicePixelRatio;
+          H = c.height = c.clientHeight * devicePixelRatio;
         });
       }
+      fx();
+
+      // Init
+      generateQuestions();
+
     })();
-
-    // scikit-learn stepper interaction
-    const stepCards = document.querySelectorAll('.sk-step-card');
-    const stepCircles = document.querySelectorAll('[data-step-circle]');
-    const stepLines = document.querySelectorAll('[data-step-line]');
-
-    function setStep(active) {
-      stepCards.forEach(card => {
-        const step = parseInt(card.dataset.step, 10);
-        if (step === active) {
-          card.classList.remove('opacity-60');
-          card.classList.add('border-amber-300/70');
-          card.style.transform = 'translateY(-2px)';
-        } else {
-          card.classList.add('opacity-60');
-          card.classList.remove('border-amber-300/70');
-          card.style.transform = 'translateY(0)';
-        }
-      });
-
-      stepCircles.forEach(circle => {
-        const step = parseInt(circle.dataset.stepCircle, 10);
-        if (step <= active) {
-          circle.classList.add('step-circle-active');
-        } else {
-          circle.classList.remove('step-circle-active');
-        }
-      });
-
-      stepLines.forEach(line => {
-        const step = parseInt(line.dataset.stepLine, 10);
-        if (step < active) {
-          line.classList.add('step-line-complete');
-        } else {
-          line.classList.remove('step-line-complete');
-        }
-      });
-    }
-
-    stepCircles.forEach(circle => {
-      circle.style.cursor = 'pointer';
-      circle.addEventListener('click', () => {
-        const step = parseInt(circle.dataset.stepCircle, 10);
-        setStep(step);
-      });
-    });
   </script>
 </body>
 </html>
