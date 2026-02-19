@@ -548,81 +548,86 @@
         state.answers = Array(qs.length).fill(null);
       }
 
-      function makeMultOptions(a, b, ans){
-        const set = new Set([ans]);
-
-        // Strategy:
-        // 1. Same last digit
-        // 2. Very close (±1b, ±2b, ±a)
-        // 3. Same order of magnitude
-        // 4. No trivial elimination
-
-        const baseSteps = [
-          b,          // off by one multiplier
-          2 * b,
-          a,
-          Math.floor(b / 2) || 1
-        ];
-
-        for (const d of baseSteps) {
-          if (set.size >= 4) break;
-
-          const plus = ans + d;
-          const minus = ans - d;
-
-          if (plus > 0) set.add(plus);
-          if (minus > 0) set.add(minus);
-        }
-
-        // Force same last digit (anti-elimination)
-        const lastDigit = ans % 10;
-        while (set.size < 4) {
-          let k = ans + randInt(-3, 3) * b;
-          if (k > 0 && k % 10 === lastDigit) {
-            set.add(k);
-          }
-        }
-
-        return shuffle(Array.from(set));
-      }
-
-
       function makePowOptions(n, pow, ans){
   const set = new Set([ans]);
+  const lastDigit = ans % 10;
 
-  // Strategy:
-  // 1. (n±1)^p and (n±2)^p
-  // 2. Algebraic near-miss offsets
-  // 3. Same digit length
-  // 4. No huge jumps
-
+  // Nearest powers (n±1, n±2)
   for (let d = 1; d <= 2; d++) {
-    const hi = Math.pow(n + d, pow);
-    const lo = Math.pow(n - d, pow);
+    let hi = Math.pow(n + d, pow);
+    let lo = Math.pow(n - d, pow);
 
-    if (hi > 0) set.add(hi);
-    if (lo > 0) set.add(lo);
+    if (hi > 0 && hi % 10 === lastDigit) set.add(hi);
+    if (lo > 0 && lo % 10 === lastDigit) set.add(lo);
   }
 
-  // Algebraic traps
+  // Algebraic traps (very close, very evil 😈)
   if (pow === 2) {
-    set.add(ans + (2 * n + 1));   // (n+1)^2 expansion
-    set.add(ans - (2 * n - 1));   // (n-1)^2 expansion
+    let t1 = ans + (2 * n);
+    let t2 = ans - (2 * n);
+
+    if (t1 > 0 && t1 % 10 === lastDigit) set.add(t1);
+    if (t2 > 0 && t2 % 10 === lastDigit) set.add(t2);
   } else {
-    set.add(ans + (3 * n * n));   // cube derivative trap
-    set.add(ans - (3 * n * n));
+    let t1 = ans + (3 * n * n);
+    let t2 = ans - (3 * n * n);
+
+    if (t1 > 0 && t1 % 10 === lastDigit) set.add(t1);
+    if (t2 > 0 && t2 % 10 === lastDigit) set.add(t2);
   }
 
-  // Enforce closeness & same magnitude
+  // Tight random fill (same last digit only)
   while (set.size < 4) {
-    let noise = ans + randInt(-n, n) * (pow === 2 ? n : n * n);
-    if (noise > 0 && Math.abs(noise - ans) < ans * 0.15) {
-      set.add(noise);
+    let k = ans + randInt(-3, 3) * 10;
+    if (k > 0 && k % 10 === lastDigit) {
+      set.add(k);
     }
   }
 
   return shuffle(Array.from(set).slice(0, 4));
 }
+
+
+
+      function makePowOptions(n, pow, ans){
+  const set = new Set([ans]);
+  const lastDigit = ans % 10;
+
+  // Nearest powers (n±1, n±2)
+  for (let d = 1; d <= 2; d++) {
+    let hi = Math.pow(n + d, pow);
+    let lo = Math.pow(n - d, pow);
+
+    if (hi > 0 && hi % 10 === lastDigit) set.add(hi);
+    if (lo > 0 && lo % 10 === lastDigit) set.add(lo);
+  }
+
+  // Algebraic traps (very close, very evil 😈)
+  if (pow === 2) {
+    let t1 = ans + (2 * n);
+    let t2 = ans - (2 * n);
+
+    if (t1 > 0 && t1 % 10 === lastDigit) set.add(t1);
+    if (t2 > 0 && t2 % 10 === lastDigit) set.add(t2);
+  } else {
+    let t1 = ans + (3 * n * n);
+    let t2 = ans - (3 * n * n);
+
+    if (t1 > 0 && t1 % 10 === lastDigit) set.add(t1);
+    if (t2 > 0 && t2 % 10 === lastDigit) set.add(t2);
+  }
+
+  // Tight random fill (same last digit only)
+  while (set.size < 4) {
+    let k = ans + randInt(-3, 3) * 10;
+    if (k > 0 && k % 10 === lastDigit) {
+      set.add(k);
+    }
+  }
+
+  return shuffle(Array.from(set).slice(0, 4));
+}
+
 
 
       // UI
